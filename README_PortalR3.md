@@ -11,14 +11,25 @@ O objetivo é garantir uma estrutura **organizada, semântica e escalável**, se
 ```
 R3 - NEW FRONT-END/
 │
-├── frontend/
-│   ├── index.html              # Página de login principal
+├── backend/                           # Backend em Python (Flask + SQLite)
 │   │
-│   └── assets/                 # Recursos visuais utilizados no frontend
-│       ├── login_bg.jpg        # Imagem de fundo da tela de login
-│       └── logo_r3.png         # Logo principal da R3 Viagens
+│   ├── app.py                         # Servidor Flask principal
+│   │
+│   └── database/                      # Banco de dados e scripts relacionados
+│       ├── create_db.py               # Script para criação/inicialização do banco
+│       └── Users.db                   # Banco SQLite com a tabela 'user'
 │
-└── README_PortalR3.md          # Documentação do projeto (inicial)
+│
+├── frontend/                          # Parte visual do sistema
+│   ├── index.html                     # Tela de login
+│   │
+│   └── assets/                        # Recursos visuais utilizados no frontend
+│       ├── login_bg.jpg               # Imagem de fundo da tela de login
+│       └── logo_r3.png                # Logo principal da R3 Viagens
+│
+│
+└── README_PortalR3.md                 # Documentação do projeto
+
 
 ```
 

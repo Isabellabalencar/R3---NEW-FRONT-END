@@ -141,7 +141,8 @@
     <div class="login-container">
       <h2>Entre na sua conta</h2>
 
-      <form action="#" method="POST">
+      <form action="http://127.0.0.1:5000/login" method="POST" autocomplete="on">
+
         <!-- Usuário -->
         <label for="usuario">Usuário</label>
         <div class="input-group">
@@ -153,7 +154,8 @@
             </g>
             <defs><clipPath id="clip0_1_141"><rect width="28" height="28" fill="white"/></clipPath></defs>
           </svg>
-          <input type="text" id="usuario" name="usuario" placeholder="Digite o texto" required />
+            <input type="text" id="usuario" name="username" autocomplete="username" placeholder="Digite seu usuário" required />
+
         </div>
 
         <!-- Senha -->
@@ -165,7 +167,8 @@
             <path d="M9 12V8C9 5.23858 11.2386 3 14 3C16.7614 3 19 5.23858 19 8V12" stroke="#AA1D21" stroke-width="2" stroke-linecap="round"/>
           </svg>
 
-          <input type="password" id="senha" name="senha" placeholder="Digite o texto" required />
+            <input type="password" id="senha" name="password" autocomplete="current-password" placeholder="Digite sua senha" required />
+
 
           <!-- Toggle olho -->
           <button type="button" class="password-toggle" id="toggleEye" aria-label="Mostrar senha" aria-pressed="false">
@@ -185,7 +188,6 @@
         </div>
 
         <div class="options">
-          <label><input type="checkbox" /> Lembrar-me</label>
           <a href="#" class="forgot-password">Esqueci minha senha</a>
         </div>
 
@@ -200,6 +202,7 @@
     </div>
   </div>
 
+  <!-- Icone do olho -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const inputSenha = document.getElementById("senha");
@@ -222,5 +225,7 @@
       });
     });
   </script>
+
+
 </body>
 </html>
