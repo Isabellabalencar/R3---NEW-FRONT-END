@@ -9,26 +9,25 @@ O objetivo é garantir uma estrutura **organizada, semântica e escalável**, se
 ## Estrutura Geral do Projeto
 
 ```
-R3 - NEW FRONT-END/
+R3-Portal/
 │
-├── backend/                           # Backend em Python (Flask + SQLite)
-│   │
-│   ├── app.py                         # Servidor Flask principal
-│   │
-│   └── database/                      # Banco de dados e scripts relacionados
-│       ├── create_db.py               # Script para criação/inicialização do banco
-│       └── Users.db                   # Banco SQLite com a tabela 'user'
+├── app.py                             # Servidor Flask principal
 │
+├── database/                          # Banco de dados e scripts relacionados
+│   ├── create_db.py                   # Script para criação/inicialização do banco
+│   └── Users.db                       # Banco SQLite com a tabela 'user'
 │
-├── frontend/                          # Parte visual do sistema
-│   ├── index.html                     # Tela de login
-│   │
-│   └── assets/                        # Recursos visuais utilizados no frontend
+├── static/                            # Arquivos estáticos (CSS, imagens, ícones, etc.)
+│   └── assets/
 │       ├── login_bg.jpg               # Imagem de fundo da tela de login
-│       └── logo_r3.png                # Logo principal da R3 Viagens
+│       ├── logo_r3.png                # Logo principal da R3 Viagens
+│       └── icone.png                  # Ícone (favicon) do site
 │
+├── templates/                         # Templates HTML usados com Flask
+│   ├── index.html                     # Tela de login
+│   └── lost_password.html            # Tela "Esqueci minha senha"
 │
-└── README_PortalR3.md                 # Documentação do projeto
+└── README_PortalR3.md                # Documentação do projeto
 
 
 ```
@@ -46,18 +45,17 @@ source venv/bin/activate  # (ou venv\Scripts\activate no Windows)
 # 2. Instalar dependências
 pip install -r requirements.txt
 
-# 3. Rodar servidor backend
-cd backend
+# 3. Rodar o servidor Flask
 python app.py
 
-# 4. Abrir frontend
-Abra o arquivo frontend/index.html no navegador
+# 4. Acessar no navegador
+http://127.0.0.1:5000
+
 ```
 
 ---
 
 
 **Autor:** Isabella Alencar  
-**Versão:** 1.0  
 **Data:** Novembro/2025  
 **Organização:** Grupo EBG / R3 Online  

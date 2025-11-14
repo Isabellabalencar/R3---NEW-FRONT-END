@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login | R3 Viagens</title>
+<link rel="icon" href="{{ url_for('static', filename='assets/icone.png') }}" type="image/png">
 
   <!-- Fonte Saira -->
   <link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;600;700&display=swap" rel="stylesheet">
@@ -21,7 +22,7 @@
       content: ""; position: absolute; inset: 0;
       background:
         linear-gradient(0deg, #00245A -40.91%, #AA1D21 3.06%, rgba(96,16,19,0.57) 44.79%, rgba(0,0,0,0) 99.42%),
-        url("assets/login_bg.jpg") center/cover no-repeat;
+        url('{{ url_for("static", filename="assets/login_bg.jpg") }}') center/cover no-repeat;
       z-index: -2;
     }
     .logo-glow {
@@ -132,7 +133,8 @@
   <!-- ESQUERDA -->
   <div class="left-side">
     <div class="logo-glow"></div>
-    <img src="assets/logo_r3.png" alt="Logo R3 Viagens" />
+    <img src="{{ url_for('static', filename='assets/logo_r3.png') }}" alt="Logo R3 Viagens" />
+
     <h1>Aqui, tecnologia e atendimento andam juntos!</h1>
   </div>
 
@@ -166,10 +168,8 @@
             <rect x="5" y="12" width="18" height="13" rx="2" stroke="#AA1D21" stroke-width="2"/>
             <path d="M9 12V8C9 5.23858 11.2386 3 14 3C16.7614 3 19 5.23858 19 8V12" stroke="#AA1D21" stroke-width="2" stroke-linecap="round"/>
           </svg>
-
+            
             <input type="password" id="senha" name="password" autocomplete="current-password" placeholder="Digite sua senha" required />
-
-
           <!-- Toggle olho -->
           <button type="button" class="password-toggle" id="toggleEye" aria-label="Mostrar senha" aria-pressed="false">
             <!-- Olho ABERTO -->
@@ -187,8 +187,50 @@
           </button>
         </div>
 
+        {% if erro %}
+          <div style="
+            width: 100%;
+            max-width: 480px;
+            height: 39px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            outline-offset: -0.75px;
+            padding: 0 12px;
+            color: #E20F13;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            font-style: italic;
+            font-weight: 400;
+            line-height: 19.2px;
+            background-color: #ffffff;
+            border-radius: 6px;
+            margin-bottom: 20px;
+          ">
+            <!-- Ícone de alerta -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 20 20" fill="none">
+            <g clip-path="url(#clip0_1_213)">
+            <path d="M10 17.5C14.1421 17.5 17.5 14.1421 17.5 10C17.5 5.85786 14.1421 2.5 10 2.5C5.85786 2.5 2.5 5.85786 2.5 10C2.5 14.1421 5.85786 17.5 10 17.5Z" stroke="#E20F13" stroke-width="1.5" stroke-miterlimit="10"/>
+            <path d="M10 10.625V6.25" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 14.375C10.5178 14.375 10.9375 13.9553 10.9375 13.4375C10.9375 12.9197 10.5178 12.5 10 12.5C9.48223 12.5 9.0625 12.9197 9.0625 13.4375C9.0625 13.9553 9.48223 14.375 10 14.375Z" fill="#E20F13"/>
+            </g>
+            <defs>
+            <clipPath id="clip0_1_213">
+            <rect width="80" height="80" fill="white"/>
+            </clipPath>
+            </defs>
+            </svg>
+
+            <!-- Texto -->
+            Usuário ou senha incorretos, por favor, revise e tente novamente!
+          </div>
+        {% endif %}
+
+
+
         <div class="options">
-          <a href="#" class="forgot-password">Esqueci minha senha</a>
+          <a href="{{ url_for('lost_password') }}" class="forgot-password">Esqueci minha senha</a>
+
         </div>
 
         <!-- Botão Entrar -->

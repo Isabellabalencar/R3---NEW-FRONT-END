@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template_string
+from flask import Flask, request, redirect, render_template
 import sqlite3
 from pathlib import Path
 
@@ -17,9 +17,8 @@ def verificar_login(username, password):
 
 @app.route("/", methods=["GET"])
 def index():
-    # Lê o index.html do frontend
-    with open("../frontend/index.html", "r", encoding="utf-8") as f:
-        return render_template_string(f.read())
+    erro = request.args.get("erro") == "1"  # True se ?erro=1
+    return render_template("index.html", erro=erro)
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -29,7 +28,7 @@ def login():
     usuario = verificar_login(username, password)
 
     if usuario:
-        tipo = usuario[3].lower()  # id, user, password, tipo
+        tipo = usuario[3].lower()  # user, password, tipo
         if tipo == "cliente":
             return "<h2>Bem-vindo, Cliente!</h2>"
         elif tipo == "consultor":
@@ -38,8 +37,32 @@ def login():
             return "<h2>Bem-vindo, Administrador!</h2>"
         else:
             return "<h3>Tipo de usuário não autorizado.</h3>", 403
+
     else:
-        return "<h3>Usuário ou senha inválidos.</h3>", 401
+        return redirect("/?erro=1")  # Força a exibição da mensagem
+
+@app.route("/esqueci-senha", methods=["GET"])
+def lost_password():
+    return render_template("lost_password.html")
+
+@app.route("/redefinir_senha", methods=["POST"])
+def redefinir_senha():
+    popup = False
+
+    if request.method == "POST":
+        usuario = request.form.get("username")
+        nova_senha = request.form.get("password")
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE user SET password = ? WHERE user = ?", (nova_senha, usuario))
+        conn.commit()
+        conn.close()
+
+        popup = True  # ativa o popup no HTML
+
+    return render_template("lost_password.html", popup=popup)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
