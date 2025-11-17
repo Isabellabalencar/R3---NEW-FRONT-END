@@ -11,23 +11,28 @@ O objetivo é garantir uma estrutura **organizada, semântica e escalável**, se
 ```
 R3-Portal/
 │
-├── app.py                             # Servidor Flask principal
+├── app.py                               # Servidor Flask principal
 │
-├── database/                          # Banco de dados e scripts relacionados
-│   ├── create_db.py                   # Script para criação/inicialização do banco
-│   └── Users.db                       # Banco SQLite com a tabela 'user'
+├── database/                            # Banco de dados e scripts relacionados
+│   ├── create_db.py                     # Script para criação/inicialização do banco
+│   └── Users.db                         # Banco SQLite com a tabela 'user'
 │
-├── static/                            # Arquivos estáticos (CSS, imagens, ícones, etc.)
+├── static/                              # Arquivos estáticos (CSS, imagens, ícones, etc.)
 │   └── assets/
-│       ├── login_bg.jpg               # Imagem de fundo da tela de login
-│       ├── logo_r3.png                # Logo principal da R3 Viagens
-│       └── icone.png                  # Ícone (favicon) do site
+│       ├── icone.png                    # Favicon do site
+│       ├── login_bg.jpg                 # Imagem de fundo da tela de login
+│       ├── logo_r3.png                  # Logo principal da R3 Viagens
+│       └── (outros arquivos futuros)   
 │
-├── templates/                         # Templates HTML usados com Flask
-│   ├── index.html                     # Tela de login
-│   └── lost_password.html            # Tela "Esqueci minha senha"
+├── templates/                           # Templates HTML usados com Flask
+│   ├── index.html                       # Tela de login
+│   ├── lost_password.html               # Tela "Esqueci minha senha"
+│   ├── home.html                        # Dashboard inicial (versão nova)
+│   ├── profile.html                     # Tela de perfil do usuário
+│   └── users.html                       # Tela de listagem e gestão de usuários
 │
-└── README_PortalR3.md                # Documentação do projeto
+└── README_PortalR3.md                   # Documentação do projeto
+
 
 
 ```

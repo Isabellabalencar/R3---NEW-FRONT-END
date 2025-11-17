@@ -2,6 +2,8 @@ from flask import Flask, request, redirect, render_template, session, url_for
 import sqlite3
 from pathlib import Path
 from functools import wraps
+import math
+
 
 app = Flask(__name__)
 
@@ -24,6 +26,45 @@ def verificar_login(username, password):
     usuario = cursor.fetchone()
     conn.close()
     return usuario
+
+def listar_usuarios(search=None, page=1, per_page=10):
+    """
+    Retorna:
+      - lista de usuários (sqlite3.Row)
+      - total de registros
+      - total de páginas
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    where = ""
+    params = []
+
+    if search:
+        where = "WHERE user LIKE ?"
+        params.append(f"%{search}%")
+
+    cursor.execute(f"SELECT COUNT(*) FROM user {where}", params)
+    total = cursor.fetchone()[0]
+
+    total_pages = max(1, math.ceil(total / per_page)) if total > 0 else 1
+    offset = (page - 1) * per_page
+
+    cursor.execute(
+        f"""
+        SELECT id, user, password, type
+        FROM user
+        {where}
+        ORDER BY id DESC
+        LIMIT ? OFFSET ?
+        """,
+        params + [per_page, offset]
+    )
+    usuarios = cursor.fetchall()
+    conn.close()
+
+    return usuarios, total, total_pages
 
 
 # ==========================================
@@ -146,6 +187,61 @@ def add_no_cache_headers(response):
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
+
+@app.route("/perfil")
+@login_required
+def perfil():
+    return render_template("profile.html", username=session.get("username"), tipo=session.get("tipo"))
+
+
+@app.route("/usuarios")
+@login_required
+def usuarios():
+    tipo = session.get("tipo")
+
+    # Somente administrador acessa a gestão de usuários
+    if tipo != "administrador":
+        return "<h3>Somente administradores podem acessar a gestão de usuários.</h3>", 403
+    
+    menu = {
+        "cotacoes": True,
+        "relatorios": True,
+        "usuarios": True
+    }
+
+    search = request.args.get("q", "").strip()
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+
+    per_page = 10
+
+    usuarios, total, total_pages = listar_usuarios(
+        search if search else None,
+        page=page,
+        per_page=per_page
+    )
+
+    if total > 0:
+        display_start = (page - 1) * per_page + 1
+        display_end = min(page * per_page, total)
+    else:
+        display_start = 0
+        display_end = 0
+
+    return render_template(
+        "users.html",
+        menu=menu,
+        tipo=tipo,
+        usuarios=usuarios,
+        page=page,
+        total_pages=total_pages,
+        total=total,
+        display_start=display_start,
+        display_end=display_end,
+        search=search
+    )
 
 
 # ==========================================

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuários | R3 Viagens</title>
+  <link rel="icon" href="{{ url_for('static', filename='assets/icone.png') }}" type="image/png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Saira", sans-serif;
+    }
+
+    body {
+        background: #F5F6FA;
+    }
+
+    /* ==========================
+       SIDEBAR – FIGMA
+    ========================== */
+    .sidebar {
+        width: 288px;
+        height: 100vh;
+        background: #00245A;
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    .sidebar-logo img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .sidebar-menu {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    /* ==========================
+       DROPDOWN (COTAÇÕES)
+    ========================== */
+    .dropdown {
+        width: 100%;
+        background: #AB1E22;
+        border-radius: 8px;
+        padding: 12px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        color: #ffffff;
+    }
+
+    .dropdown-header-left {
+        flex: 1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .dropdown-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .dropdown-arrow {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        right: 12px;
+        top: 25%;
+        transform: translateY(-40%);
+        transition: transform 0.2s ease;
+    }
+
+    .dropdown.open .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    .submenu {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        margin-left: 4px;
+        margin-top: 4px;
+    }
+
+    .dropdown.open .submenu {
+        display: flex;
+    }
+
+    .submenu-item {
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        color: white;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .submenu-item:hover {
+        background: rgba(255, 255, 255, 0.20);
+    }
+
+    /* ==========================
+       MENU ITEM NORMAL
+    ========================== */
+    .menu-item {
+        width: 100%;
+        padding: 12px;
+        border-radius: 6px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+
+    .menu-item:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .menu-item.active {
+        background: #AB1E22;
+    }
+
+    /* ==========================
+       TOPBAR SUPERIOR
+    ========================== */
+    .topbar {
+        position: fixed;
+        top: 0;
+        left: 288px;
+        width: calc(100% - 288px);
+        height: 70px;
+        background: #ffffff;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 0 40px;
+        gap: 24px;
+        border-bottom: 1px solid #E5E5E5;
+        z-index: 50;
+    }
+
+    .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-user span {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .topbar-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+    }
+
+    .topbar-logout {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        color: #555;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .topbar-logout:hover {
+        color: #AB1E22;
+    }
+
+    .topbar-logout svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .topbar-divider {
+        width: 1px;
+        height: 40px;
+        background: #CCD3E0;
+        margin: 0 18px;
+    }
+
+    /* ==========================
+       MAIN CONTENT
+    ========================== */
+    .home-container {
+        margin-left: 288px;
+        padding: 120px 40px 40px 40px; /* espaço para a topbar */
+    }
+
+    /* ==========================
+       USERS PAGE
+    ========================== */
+
+    .users-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .users-header-left .breadcrumb {
+        font-size: 14px;
+        color: #8A8FA3;
+        margin-bottom: 4px;
+    }
+
+    .users-header-left h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1C1C28;
+    }
+
+    .btn-add-user {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px;
+    height: 44px;
+    background: #AB1E22;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+
+    flex-shrink: 0;       /* impede o botão de diminuir */
+    margin-left: 16px;    /* aproxima do input */
+}
+
+    .btn-add-user:hover {
+        background: #92181C;
+    }
+
+    .users-filters {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;   /* todos começam da esquerda */
+    gap: 16px;                     /* distância controlada */
+
+    margin-bottom: 24px;
+}
+
+
+    .search-form {
+    flex: 0 0 auto;
+    width: 60%; /* ajuste fino aqui */
+}
+
+
+    .search-label,
+    .filter-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #4D4F5C;
+        margin-bottom: 8px;
+    }
+
+    .search-input-wrapper {
+    width: auto;
+    flex: 1;       /* ele cresce, mas não ocupa tudo sozinho */
+    position: relative;
+}
+
+
+.search-input {
+    width: 100%;           /* ocupa todo o wrapper */
+    height: 40px;          /* menor */
+    padding: 10px 44px 10px 14px; /* espaço à direita para o botão */
+    border-radius: 8px;
+    border: 1px solid #DEDEDE;
+    background: #FFF;
+    font-size: 14px;
+    color: #333;
+}
+
+.search-input::placeholder {
+    color: #A0A3B1;
+}
+
+.search-button {
+    position: absolute;
+    right: 12px;           /* gruda no input */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.search-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+    .filter-block {
+        min-width: 220px;
+    }
+
+    .filter-select {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 44px;
+        border-radius: 8px;
+        border: 1px solid #D7DAE2;
+        padding: 0 12px;
+        background: #fff;
+        font-size: 14px;
+        color: #4D4F5C;
+        cursor: default;
+    }
+
+    .filter-select svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* CARD / TABELA */
+    .users-card {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 20px 24px 16px 24px;
+        box-shadow: 0 4px 12px rgba(19, 33, 68, 0.04);
+        max-width: 1180px;   /* ajuste conforme a largura do input */
+        width: 100%;
+        margin-left: 0;   
+    }
+
+    .users-card-header {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1C1C28;
+        margin-bottom: 16px;
+    }
+
+    .users-table-wrapper {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #E4E6EE;
+         width: 100%;
+    }
+
+    table.users-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        font-size: 14px;
+    }
+
+    .users-table thead {
+        background: #F5F6FA;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #E4E6EE;
+        color: #4D4F5C;
+        vertical-align: middle;
+    }
+
+    .users-table th {
+        font-weight: 600;
+        font-size: 13px;
+        color: #8A8FA3;
+    }
+
+    .users-table tbody tr:hover {
+        background: #FAFBFF;
+    }
+
+    .actions-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .icon-button {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon-button svg {
+        width: 18px;
+        height: 18px;
+        stroke: #8A8FA3;
+    }
+
+    .icon-button.delete svg {
+        stroke: #E20F13;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 24px 16px;
+        color: #8A8FA3;
+        font-style: italic;
+    }
+
+    /* FOOTER */
+    .users-footer {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #8A8FA3;
+    }
+
+    .pagination {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page-link,
+    .page-ellipsis {
+        min-width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        text-decoration: none;
+        color: #4D4F5C;
+        cursor: pointer;
+    }
+
+    .page-link.active {
+        background: #AB1E22;
+        color: #fff;
+        border-color: #AB1E22;
+    }
+
+    .page-link:hover:not(.active) {
+        border-color: #D7DAE2;
+        background: #F5F6FA;
+    }
+
+    .page-ellipsis {
+        cursor: default;
+    }
+
+
+.users-table-wrapper {
+    max-width: 1000px;
+    margin-left: 0; 
+}
+
+    /* ==========================
+   CONTAINER PRINCIPAL DE USUÁRIOS
+   (Input + Botão + Tabela)
+========================== */
+.users-container {
+    width: 100%;
+    max-width: 1350px;      /* limite proporcional ao layout */
+    margin-left: 0;         /* alinhado com o título */
+    margin-top: 8px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;              /* espaçamento proporcional entre input/tabela */
+}
+
+/* Ajuste para filtros (input + botão) dentro do container */
+.users-container .users-filters {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 16px;
+}
+
+/* Ajuste da tabela para seguir o container */
+.users-container .users-card {
+    width: 78%;
+    max-width: 100%;         /* nunca ultrapassa o container */
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 12px rgba(19, 33, 68, 0.05);
+}
+
+/* Wrapper da tabela totalmente responsivo */
+.users-container .users-table-wrapper {
+    width: 100%;
+    border: 1px solid #E4E6EE;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+
+
+    @media (max-width: 1024px) {
+        .users-filters {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-block {
+            min-width: 0;
+        }
+
+        .home-container {
+            padding: 100px 16px 24px 16px;
+            margin-left: 0;
+        }
+
+        .topbar {
+            left: 0;
+            width: 100%;
+        }
+
+        .sidebar {
+            display: none; /* responsivo simples por enquanto */
+        }
+    }
+
+  </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='assets/logo_r3.png') }}" alt="Logo R3">
+        </div>
+
+        <nav class="sidebar-menu">
+
+            {% if menu.cotacoes %}
+            <div class="dropdown" onclick="toggleDropdown()">
+                <div class="dropdown-header">
+                    <div class="dropdown-header-left">
+                        <div class="dropdown-icon">
+                            <!-- Ícone de Cotações -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                                <path d="M12 6.75V8.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 15.75V17.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9z" stroke="white" stroke-width="1.5"/>
+                                <path d="M9.75 15.75h3.375c.497 0 .974-.197 1.325-.549.352-.351.55-.828.55-1.326 0-.498-.198-.975-.55-1.326-.351-.352-.828-.549-1.325-.549h-2.25c-.497 0-.974-.198-1.325-.55A1.87 1.87 0 0 1 9 10.125c0-.498.198-.975.55-1.326.351-.352.828-.549 1.325-.549h3.375" stroke="white" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        Cotações
+                    </div>
+                    <div class="dropdown-arrow">
+                        <svg width="15" height="10" fill="none">
+                            <path d="M1 1l4 4 4-4" stroke="white" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="submenu">
+                    <div class="submenu-item">Lazer</div>
+                    <div class="submenu-item">Corporativo</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if menu.relatorios %}
+            <a class="menu-item" href="#">
+                <div class="menu-icon">
+                    <!-- Ícone de relatórios -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                        <path d="M9 12h6M9 15h6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M4.5 3.75h15V18.75a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18.75V3.75z" stroke="white" stroke-width="1.5"/>
+                        <path d="M7.5 2.25v3M12 2.25v3M16.5 2.25v3" stroke="white" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                Relatórios
+            </a>
+            {% endif %}
+
+            {% if menu.usuarios %}
+            <a class="menu-item active" href="{{ url_for('usuarios') }}">
+                <div class="menu-icon">
+                    <!-- Ícone de Usuários -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                        <path d="M7.875 15A4.875 4.875 0 1 0 7.875 5.25a4.875 4.875 0 0 0 0 9.75z" stroke="white" stroke-width="1.5"/>
+                        <path d="M1 18.75c1.5-2.25 4.5-3.75 6.875-3.75 2.375 0 5.375 1.5 6.875 3.75" stroke="white" stroke-width="1.5"/>
+                        <path d="M16.125 15c2.25 0 4.875 1.5 6.375 3.75" stroke="white" stroke-width="1.5"/>
+                        <path d="M14.5 5.5a5.5 5.5 0 0 1 5 9" stroke="white" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                Usuários
+            </a>
+            {% endif %}
+
+        </nav>
+
+    </aside>
+
+
+    <!-- ==============================
+         TOPBAR SUPERIOR
+    ============================== -->
+    <header class="topbar">
+
+        <div class="topbar-user">
+            <span>Bem-vinda, {{ session['username'] }}!</span>
+
+            <!-- Avatar temporário -->
+            <a href="{{ url_for('perfil') }}" class="topbar-avatar-link">
+                <img src="https://i.pravatar.cc/100?img=47" class="topbar-avatar" alt="Foto do usuário">
+            </a>
+
+            <!-- BARRINHA DIVISÓRIA -->
+            <div class="topbar-divider"></div>
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="topbar-logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <g clip-path="url(#clip0_3_163)">
+                    <path d="M10.5 3.75H4.5V20.25H10.5" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10.5 12H21" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17.25 8.25L21 12L17.25 15.75" stroke="#969696" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+                <defs>
+                    <clipPath id="clip0_3_163">
+                        <rect width="24" height="24" fill="white"/>
+                    </clipPath>
+                </defs>
+            </svg>
+            Sair
+        </a>
+    </header>
+
+
+    <!-- ==============================
+         CONTEÚDO – USUÁRIOS
+    ============================== -->
+    <div class="home-container">
+
+        <!-- Cabeçalho -->
+        <div class="users-header">
+            <div class="users-header-left">
+                <div class="breadcrumb">Usuários &gt; Tela inicial</div>
+                <h1>Usuários</h1>
+            </div>
+
+            
+        </div>
+
+      <div class="users-container">
+
+    <!-- Busca e filtro -->
+    <div class="users-filters">
+        <form method="get" action="{{ url_for('usuarios') }}" class="search-form">
+            <label class="search-label">Buscar por cliente</label>
+            <div class="search-input-wrapper">
+                <input
+                    type="text"
+                    name="q"
+                    class="search-input"
+                    placeholder="Digite o nome"
+                    value="{{ search or '' }}"
+                >
+                <button type="submit" class="search-button" aria-label="Buscar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <g clip-path="url(#clip0_10_1627)">
+                        <path d="M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z" stroke="#AB1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15.8047 15.8035L21.0012 21" stroke="#AB1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </g>
+                        <defs>
+                        <clipPath id="clip0_10_1627">
+                        <rect width="24" height="24" fill=none/>
+                        </clipPath>
+                        </defs>
+                    </svg>
+                </button>
+            </div>
+        </form>
+
+        <!-- Botão de novo usuário -->
+        <a href="#" class="btn-add-user">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M0.75 6.75H12.75" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6.75 0.75V12.75" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Adicionar novo usuário
+        </a>
+    </div>
+
+    <!-- Card + tabela -->
+    <section class="users-card">
+        <div class="users-card-header">Listagem de Usuários</div>
+
+        <div class="users-table-wrapper">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>ID</th>
+                        <th>Senha</th>
+                        <th>E-mail</th>
+                        <th>Tipo de Usuário</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if usuarios %}
+                        {% for u in usuarios %}
+                        <tr>
+                            <td>{{ u["user"] }}</td>
+                            <td>{{ u["id"] }}</td>
+                            <td>{{ u["password"] }}</td>
+                            <td>-</td>
+                            <td>{{ u["type"]|capitalize }}</td>
+                            <td class="actions-cell">
+                                <!-- Editar -->
+                                <button class="icon-button" title="Editar usuário">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <path d="M4 20H20" stroke="#8A8FA3" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M5 15.5L14.5 6L18 9.5L8.5 19H5V15.5Z" stroke="#8A8FA3" stroke-width="1.5" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+
+                                <!-- Excluir -->
+                                <button class="icon-button delete" title="Excluir usuário">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+                                        <path d="M5 7H19" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M10 10V17" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M14 10V17" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M6 7L7 19C7 19.5523 7.44772 20 8 20H16C16.5523 20 17 19.5523 17 19L18 7" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M9 7V5C9 4.44772 9.44772 4 10 4H14C14.5523 4 15 4.44772 15 5V7" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                Nenhum usuário encontrado.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="users-footer">
+            <span class="results-info">
+                {% if total > 0 %}
+                    Exibindo {{ display_start }}–{{ display_end }} de {{ total }} resultados
+                {% else %}
+                    Nenhum resultado para exibir
+                {% endif %}
+            </span>
+
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a class="page-link" href="{{ url_for('usuarios', page=page-1, q=search) }}">&lt;</a>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == 1 or p == total_pages or (p >= page-1 and p <= page+1) %}
+                        {% if p == page %}
+                            <span class="page-link active">{{ p }}</span>
+                        {% else %}
+                            <a class="page-link" href="{{ url_for('usuarios', page=p, q=search) }}">{{ p }}</a>
+                        {% endif %}
+                    {% elif p == 2 and page > 3 %}
+                        <span class="page-ellipsis">...</span>
+                    {% elif p == total_pages-1 and page < total_pages-2 %}
+                        <span class="page-ellipsis">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                    <a class="page-link" href="{{ url_for('usuarios', page=page+1, q=search) }}">&gt;</a>
+                {% endif %}
+            </div>
+        </div>
+
+    </section>
+
+</div>
+
+    <script>
+        function toggleDropdown() {
+            document.querySelector('.dropdown').classList.toggle('open');
+        }
+
+        // Impede voltar para tela de login no back do navegador
+        history.pushState(null, '', location.href);
+        window.onpopstate = function () {
+            history.pushState(null, '', location.href);
+        };
+    </script>
+
+</body>
+</html>

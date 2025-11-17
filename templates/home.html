@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
   <style>
     * {
@@ -24,9 +24,9 @@
         background: #F5F6FA;
     }
 
-    /* =======================
-       SIDEBAR – MEDIDAS FIGMA
-       ======================= */
+    /* ==========================
+       SIDEBAR – FIGMA
+    ========================== */
     .sidebar {
         width: 288px;
         height: 100vh;
@@ -41,14 +41,11 @@
         left: 0;
     }
 
-    /* LOGO */
     .sidebar-logo img {
         width: 90px;
         height: 90px;
     }
 
-
-    /* MENU */
     .sidebar-menu {
         width: 100%;
         display: flex;
@@ -56,9 +53,10 @@
         gap: 4px;
     }
 
-    /* =======================
-       ITEM DROPDOWN (VERMELHO)
-       ======================= */
+
+    /* ==========================
+       DROPDOWN (COTAÇÕES)
+    ========================== */
     .dropdown {
         width: 100%;
         background: #AB1E22;
@@ -70,7 +68,6 @@
         gap: 12px;
     }
 
-    /* CABEÇALHO DO DROPDOWN */
     .dropdown-header {
         display: flex;
         align-items: center;
@@ -89,7 +86,6 @@
     .dropdown-icon {
         width: 24px;
         height: 24px;
-        position: relative;
     }
 
     .dropdown-arrow {
@@ -106,7 +102,6 @@
         transform: rotate(180deg);
     }
 
-    /* SUBMENU */
     .submenu {
         display: none;
         flex-direction: column;
@@ -132,7 +127,9 @@
         background: rgba(255, 255, 255, 0.20);
     }
 
-    /* ITENS NORMAIS DO MENU */
+    /* ==========================
+       MENU ITEM NORMAL
+    ========================== */
     .menu-item {
         width: 100%;
         padding: 12px;
@@ -151,52 +148,113 @@
         background: rgba(255, 255, 255, 0.15);
     }
 
-    /* HOME CONTAINER */
+
+    /* ==========================
+       TOPBAR SUPERIOR
+    ========================== */
+    .topbar {
+        position: fixed;
+        top: 0;
+        left: 288px;
+        width: calc(100% - 288px);
+        height: 70px;
+        background: #ffffff;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 0 40px;
+        gap: 24px;
+        border-bottom: 1px solid #E5E5E5;
+        z-index: 50;
+    }
+
+    .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-user span {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .topbar-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+    }
+
+    .topbar-logout {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        color: #555;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .topbar-logout:hover {
+        color: #AB1E22;
+    }
+
+    .topbar-logout svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .topbar-divider {
+    width: 1px;
+    height: 40px;
+    background: #CCD3E0;
+    margin: 0 18px;
+}
+
+
+    /* ==========================
+       MAIN CONTENT
+    ========================== */
     .home-container {
         margin-left: 288px;
-        padding: 40px;
+        padding: 120px 40px 40px 40px; /* espaço para a topbar */
     }
   </style>
 </head>
 
 <body>
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
 
         <div class="sidebar-logo">
             <img src="{{ url_for('static', filename='assets/logo_r3.png') }}" alt="Logo R3">
-          
         </div>
 
         <nav class="sidebar-menu">
 
-            <!-- =======================
-                COTAÇÕES — sempre aparece para consultor e administrador
-            ======================= -->
             {% if menu.cotacoes %}
             <div class="dropdown" onclick="toggleDropdown()">
-
                 <div class="dropdown-header">
                     <div class="dropdown-header-left">
-
                         <div class="dropdown-icon">
                             <!-- Ícone de Cotações -->
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <g clip-path="url(#clip0_2_884)">
-                                <path d="M12 6.75V8.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 15.75V17.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M9.75 15.75H13.125C13.6223 15.75 14.0992 15.5525 14.4508 15.2008C14.8025 14.8492 15 14.3723 15 13.875C15 13.3777 14.8025 12.9008 14.4508 12.5492C14.0992 12.1975 13.6223 12 13.125 12H10.875C10.3777 12 9.90081 11.8025 9.54917 11.4508C9.19754 11.0992 9 10.6223 9 10.125C9 9.62772 9.19754 9.15081 9.54917 8.79917C9.90081 8.44754 10.3777 8.25 10.875 8.25H14.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                </g>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                                <path d="M12 6.75V8.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 15.75V17.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9z" stroke="white" stroke-width="1.5"/>
+                                <path d="M9.75 15.75h3.375c.497 0 .974-.197 1.325-.549.352-.351.55-.828.55-1.326 0-.498-.198-.975-.55-1.326-.351-.352-.828-.549-1.325-.549h-2.25c-.497 0-.974-.198-1.325-.55A1.87 1.87 0 0 1 9 10.125c0-.498.198-.975.55-1.326.351-.352.828-.549 1.325-.549h3.375" stroke="white" stroke-width="1.5"/>
                             </svg>
                         </div>
-
                         Cotações
                     </div>
-
                     <div class="dropdown-arrow">
-                        <svg width="15" height="10" viewBox="0 0 10 6" fill="none">
-                            <path d="M1 1L5 5L9 1" stroke="white" stroke-width="1.5"/>
+                        <svg width="15" height="10" fill="none">
+                            <path d="M1 1l4 4 4-4" stroke="white" stroke-width="1.5"/>
                         </svg>
                     </div>
                 </div>
@@ -205,44 +263,33 @@
                     <div class="submenu-item">Lazer</div>
                     <div class="submenu-item">Corporativo</div>
                 </div>
-
             </div>
             {% endif %}
 
 
-            <!-- RELATÓRIOS (consultor + administrador) -->
             {% if menu.relatorios %}
             <a class="menu-item" href="#">
                 <div class="menu-icon">
-                    <!-- Ícone de Relatórios -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <g clip-path="url(#clip0_3_309)">
-                        <path d="M9 12H15" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M9 15H15" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M4.5 3.75H19.5V18.75C19.5 19.3467 19.2629 19.919 18.841 20.341C18.419 20.7629 17.8467 21 17.25 21H6.75C6.15326 21 5.58097 20.7629 5.15901 20.341C4.73705 19.919 4.5 19.3467 4.5 18.75V3.75Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M7.5 2.25V5.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 2.25V5.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M16.5 2.25V5.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </g>
+                    <!-- Ícone de relatórios -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                        <path d="M9 12h6M9 15h6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M4.5 3.75h15V18.75a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18.75V3.75z" stroke="white" stroke-width="1.5"/>
+                        <path d="M7.5 2.25v3M12 2.25v3M16.5 2.25v3" stroke="white" stroke-width="1.5"/>
                     </svg>
                 </div>
                 Relatórios
             </a>
             {% endif %}
 
-
-            <!-- USUÁRIOS (somente administrador) -->
             {% if menu.usuarios %}
-            <a class="menu-item" href="#">
+            <a class="menu-item" href="{{ url_for('usuarios') }}">
                 <div class="menu-icon">
                     <!-- Ícone de Usuários -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <g clip-path="url(#clip0_2_891)">
-                        <path d="M7.875 15C10.5674 15 12.75 12.8174 12.75 10.125C12.75 7.43261 10.5674 5.25 7.875 5.25C5.18261 5.25 3 7.43261 3 10.125C3 12.8174 5.18261 15 7.875 15Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M0.958984 18.75C1.70813 17.5982 2.73311 16.6517 3.94086 15.9965C5.14861 15.3412 6.50089 14.998 7.87492 14.998C9.24896 14.998 10.6012 15.3412 11.809 15.9965C13.0167 16.6517 14.0417 17.5982 14.7909 18.75" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M16.125 15C17.499 14.9992 18.8513 15.3418 20.0592 15.9967C21.267 16.6517 22.292 17.5981 23.0409 18.75" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M14.3145 5.59687C14.9813 5.3309 15.6987 5.2155 16.4153 5.25893C17.1319 5.30235 17.8301 5.50352 18.46 5.84806C19.0899 6.19261 19.6359 6.67202 20.059 7.25204C20.4821 7.83206 20.7718 8.49838 20.9076 9.20338C21.0433 9.90837 21.0216 10.6346 20.8441 11.3303C20.6666 12.026 20.3376 12.6738 19.8807 13.2276C19.4238 13.7814 18.8502 14.2274 18.2009 14.5338C17.5516 14.8402 16.8427 14.9994 16.1248 15" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </g>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                        <path d="M7.875 15A4.875 4.875 0 1 0 7.875 5.25a4.875 4.875 0 0 0 0 9.75z" stroke="white" stroke-width="1.5"/>
+                        <path d="M1 18.75c1.5-2.25 4.5-3.75 6.875-3.75 2.375 0 5.375 1.5 6.875 3.75" stroke="white" stroke-width="1.5"/>
+                        <path d="M16.125 15c2.25 0 4.875 1.5 6.375 3.75" stroke="white" stroke-width="1.5"/>
+                        <path d="M14.5 5.5a5.5 5.5 0 0 1 5 9" stroke="white" stroke-width="1.5"/>
                     </svg>
                 </div>
                 Usuários
@@ -253,9 +300,49 @@
 
     </aside>
 
+
+    <!-- ==============================
+         TOPBAR SUPERIOR
+    ============================== -->
+    <header class="topbar">
+
+        <div class="topbar-user">
+            <span>Bem-vinda, {{ session['username'] }}!</span>
+
+            <!-- Avatar temporário -->
+            <a href="{{ url_for('perfil') }}" class="topbar-avatar-link">
+                <img src="https://i.pravatar.cc/100?img=47" class="topbar-avatar" alt="Foto do usuário">
+            </a>
+
+            <!-- BARRINHA DIVISÓRIA -->
+            <div class="topbar-divider"></div>        
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="topbar-logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <g clip-path="url(#clip0_3_163)">
+                <path d="M10.5 3.75H4.5V20.25H10.5" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10.5 12H21" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M17.25 8.25L21 12L17.25 15.75" stroke="#969696" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+                <defs>
+                <clipPath id="clip0_3_163">
+                <rect width="24" height="24" fill="white"/>
+                </clipPath>
+                </defs>
+            </svg>
+            Sair
+        </a>
+    </header>
+
+
+    <!-- ==============================
+         CONTEÚDO DA HOME
+    ============================== -->
     <div class="home-container">
         <p>Conteúdo da home será adicionado futuramente.</p>
     </div>
+
 
     <script>
         function toggleDropdown() {
@@ -263,13 +350,12 @@
         }
     </script>
 
-<script>
-    history.pushState(null, '', location.href);
-    window.onpopstate = function () {
+    <script>
         history.pushState(null, '', location.href);
-    };
-</script>
-
+        window.onpopstate = function () {
+            history.pushState(null, '', location.href);
+        };
+    </script>
 
 </body>
 </html>
