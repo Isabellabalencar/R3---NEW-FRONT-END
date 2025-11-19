@@ -9,10 +9,12 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # Cria tabela de usuários
+    # Cria tabela com todos os campos usados no modal
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS user (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            full_name TEXT,
+            email TEXT,
             user TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             type TEXT NOT NULL
@@ -25,17 +27,19 @@ def init_db():
 
     if qtd == 0:
         usuarios_teste = [
-            ("cliente_teste",   "1234", "cliente"),
-            ("consultor_teste", "1234", "consultor"),
-            ("admin_teste",     "1234", "administrador"),
+            ("Cliente Teste",   "cliente@teste.com",   "cliente_teste",   "1234", "cliente"),
+            ("Consultor Teste", "consultor@teste.com", "consultor_teste", "1234", "consultor"),
+            ("Admin Teste",     "admin@teste.com",     "admin_teste",     "1234", "administrador"),
         ]
+
         cursor.executemany(
-            "INSERT INTO user (user, password, type) VALUES (?, ?, ?);",
+            "INSERT INTO user (full_name, email, user, password, type) VALUES (?, ?, ?, ?, ?);",
             usuarios_teste
         )
+
         print("Usuários de teste inseridos.")
     else:
-        print("Tabela user já possui dados, nada inserido.")
+        print("Tabela 'user' já possui dados, nada inserido.")
 
     conn.commit()
     conn.close()

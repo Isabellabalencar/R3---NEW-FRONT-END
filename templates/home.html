@@ -92,8 +92,8 @@
         width: 20px;
         height: 20px;
         position: absolute;
-        right: 12px;
-        top: 25%;
+        right: 5px;
+        top: 40%;
         transform: translateY(-40%);
         transition: transform 0.2s ease;
     }
@@ -307,7 +307,7 @@
     <header class="topbar">
 
         <div class="topbar-user">
-            <span>Bem-vinda, {{ session['username'] }}!</span>
+            <span>Bem-vinda, {{ session['user'] }}!</span>
 
             <!-- Avatar temporário -->
             <a href="{{ url_for('perfil') }}" class="topbar-avatar-link">

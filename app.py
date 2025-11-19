@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, session, url_for
+from flask import Flask, request, redirect, render_template, session, url_for, jsonify
 import sqlite3
 from pathlib import Path
 from functools import wraps
@@ -52,15 +52,16 @@ def listar_usuarios(search=None, page=1, per_page=10):
     offset = (page - 1) * per_page
 
     cursor.execute(
-        f"""
-        SELECT id, user, password, type
-        FROM user
-        {where}
-        ORDER BY id DESC
-        LIMIT ? OFFSET ?
-        """,
-        params + [per_page, offset]
-    )
+    f"""
+    SELECT id, full_name, email, user, password, type
+    FROM user
+    {where}
+    ORDER BY id DESC
+    LIMIT ? OFFSET ?
+    """,
+    params + [per_page, offset]
+)
+
     usuarios = cursor.fetchall()
     conn.close()
 
@@ -73,7 +74,7 @@ def listar_usuarios(search=None, page=1, per_page=10):
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if "username" not in session:
+        if "user" not in session:
             return redirect(url_for("index"))
         return f(*args, **kwargs)
     return decorated_function
@@ -82,14 +83,11 @@ def login_required(f):
 # ==========================================
 # ROTA INICIAL
 # ==========================================
-@app.route("/", methods=["GET"])
+@app.route("/")
 def index():
-    # se o usuário já está logado, não mostra o login
-    if "username" in session:
-        return redirect(url_for("home"))
-
-    erro = request.args.get("erro") == "1"
+    erro = request.args.get("erro")
     return render_template("index.html", erro=erro)
+
 
 
 
@@ -104,14 +102,15 @@ def login():
     usuario = verificar_login(username, password)
 
     if usuario:
-        tipo = usuario[3].lower()
+        tipo = usuario[5].lower()
 
-        session["username"] = username
-        session["tipo"] = tipo
+        session["user"] = username
+        session["type"] = tipo
 
         return redirect(url_for("home"))
     else:
         return redirect("/?erro=1")
+
 
 
 # ==========================================
@@ -136,7 +135,8 @@ def lost_password():
 def redefinir_senha():
     popup = False
 
-    usuario = request.form.get("username")
+    # Corrigido aqui
+    usuario = request.form.get("username")  
     nova_senha = request.form.get("password")
 
     conn = sqlite3.connect(DB_PATH)
@@ -156,7 +156,7 @@ def redefinir_senha():
 @app.route("/home")
 @login_required
 def home():
-    tipo = session.get("tipo")
+    tipo = session.get("type")
 
     if tipo == "consultor":
         menu = {
@@ -173,9 +173,12 @@ def home():
         }
 
     else:
-        return "<h3>Clientes não têm acesso ao dashboard.</h3>"
+        # Redirecionar para a tela de login com erro
+        return redirect(url_for("index", erro=2))
 
     return render_template("home.html", menu=menu, tipo=tipo)
+
+
 
 
 # ==========================================
@@ -197,7 +200,7 @@ def perfil():
 @app.route("/usuarios")
 @login_required
 def usuarios():
-    tipo = session.get("tipo")
+    tipo = session.get("type")
 
     # Somente administrador acessa a gestão de usuários
     if tipo != "administrador":
@@ -242,6 +245,103 @@ def usuarios():
         display_end=display_end,
         search=search
     )
+
+@app.route("/add_user", methods=['POST'])
+def add_user():
+    data = request.get_json()
+
+    full_name = data.get("name")
+    email = data.get("email")
+    username = data.get("user")
+    password = data.get("password")
+    type_user = data.get("type")
+
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=5)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO user (full_name, email, user, password, type)
+            VALUES (?, ?, ?, ?, ?)
+        """, (full_name, email, username, password, type_user))
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({"success": True}), 200
+
+    except sqlite3.IntegrityError:
+        return jsonify({"success": False, "error": "Usuário já existe!"}), 400
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/delete_user/<int:user_id>", methods=["DELETE"])
+@login_required
+def delete_user(user_id):
+    tipo = session.get("type")
+    if tipo != "administrador":
+        return jsonify({"success": False, "error": "Apenas administradores podem excluir usuários."}), 403
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM user WHERE id = ?", (user_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/edit_user/<int:user_id>", methods=["PUT"])
+@login_required
+def edit_user(user_id):
+    tipo = session.get("type")  # ou "tipo", dependendo do seu projeto
+
+    # Apenas administradores podem editar usuários
+    if tipo != "administrador":
+        return jsonify({"success": False, "error": "Permissão negada."}), 403
+
+    data = request.get_json()
+
+    # Dados recebidos
+    full_name = data.get("name", "").strip()
+    email = data.get("email", "").strip()
+    user = data.get("user", "").strip()
+    password = data.get("password", "").strip()
+    user_type = data.get("type", "").strip()
+
+    if not user or not user_type:
+        return jsonify({"success": False, "error": "Usuário e tipo são obrigatórios."}), 400
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Atualiza com ou sem senha, conforme preenchimento
+        if password:
+            cursor.execute("""
+                UPDATE user
+                SET full_name = ?, email = ?, user = ?, password = ?, type = ?
+                WHERE id = ?
+            """, (full_name, email, user, password, user_type, user_id))
+        else:
+            cursor.execute("""
+                UPDATE user
+                SET full_name = ?, email = ?, user = ?, type = ?
+                WHERE id = ?
+            """, (full_name, email, user, user_type, user_id))
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({"success": True}), 200
+
+    except sqlite3.IntegrityError:
+        return jsonify({"success": False, "error": "Nome de usuário já existe."}), 400
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 # ==========================================
