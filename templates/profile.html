@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil | R3 Viagens</title>
+  <link rel="icon" href="{{ url_for('static', filename='assets/icone.png') }}" type="image/png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Saira", sans-serif;
+    }
+
+    body {
+        background: #F5F6FA;
+    }
+
+    /* ==========================
+       SIDEBAR – FIGMA
+    ========================== */
+    .sidebar {
+        width: 288px;
+        height: 100vh;
+        background: #00245A;
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    .sidebar-logo img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .sidebar-menu {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    /* ==========================
+       DROPDOWN (COTAÇÕES)
+    ========================== */
+    .dropdown {
+        width: 100%;
+        background: #AB1E22;
+        border-radius: 8px;
+        padding: 12px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        color: #ffffff;
+    }
+
+    .dropdown-header-left {
+        flex: 1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .dropdown-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .dropdown-arrow {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        right: 5px;
+        top: 40%;
+        transform: translateY(-40%);
+        transition: transform 0.2s ease;
+    }
+
+    .dropdown.open .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    .submenu {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        margin-left: 4px;
+        margin-top: 4px;
+    }
+
+    .dropdown.open .submenu {
+        display: flex;
+    }
+
+    .submenu-item {
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        color: white;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .submenu-item:hover {
+        background: rgba(255, 255, 255, 0.20);
+    }
+
+    /* ==========================
+       MENU ITEM NORMAL
+    ========================== */
+    .menu-item {
+        width: 100%;
+        padding: 12px;
+        border-radius: 6px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+
+    .menu-item:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .menu-item.active {
+        background: #AB1E22;
+    }
+
+    /* ==========================
+       TOPBAR SUPERIOR
+    ========================== */
+    .topbar {
+        position: fixed;
+        top: 0;
+        left: 288px;
+        width: calc(100% - 288px);
+        height: 70px;
+        background: #ffffff;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 0 40px;
+        gap: 24px;
+        border-bottom: 1px solid #E5E5E5;
+        z-index: 50;
+    }
+
+    .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-user span {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .topbar-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+    }
+
+    .topbar-logout {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        color: #555;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .topbar-logout:hover {
+        color: #AB1E22;
+    }
+
+    .topbar-logout svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .topbar-divider {
+        width: 1px;
+        height: 40px;
+        background: #CCD3E0;
+        margin: 0 18px;
+    }
+
+    /* ==========================
+       MAIN CONTENT
+    ========================== */
+    .home-container {
+        margin-left: 288px;
+        padding: 120px 40px 40px 40px; /* espaço para a topbar */
+    }
+
+    /* ==========================
+   PERFIL – ESTILOS
+========================== */
+
+.profile-breadcrumb {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.profile-breadcrumb span {
+    font-weight: 600;
+    color: #333;
+}
+
+.profile-card {
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    margin-bottom: 32px;
+}
+
+.profile-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.profile-card-header h2 {
+    font-size: 22px;
+    color: #333;
+    font-weight: 600;
+}
+
+.profile-edit-btn {
+    background: #AB1E22;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 84px;
+    aspect-ratio: 20 / 21;
+    border-radius: 84px;
+    object-fit: cover;
+    background-color: lightgray;  /* fallback */
+    display: block;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.profile-grid label,
+.password-grid label {
+    font-size: 14px;
+    color: #666;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.profile-grid input,
+.password-grid input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #DDD;
+    border-radius: 8px;
+    background: #F8F8F8;
+}
+
+
+/* CARD ALTERAR SENHA */
+.password-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.btn-change-password {
+    background: #00245A;
+    color: #FFF;
+
+    font-family: Saira;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px; /* 128.571% */
+    padding: 12px 16px;
+    border-radius: 30px;
+    border: none;
+    width: 180px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+
+.edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.btn-cancel {
+    background: #ffffff;
+    border: 2px solid #000;
+    color: #000;
+    padding: 12px 30px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.btn-save {
+    background: #AB1E22;
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.edit-photo-text {
+    color: #AA1E22;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    display: none;
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: -0.14px;
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-align: center;
+
+}
+
+/* ===== MODAL UPLOAD FOTO ===== */
+
+.modal-overlay {
+    display: none; /* padrão: oculto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.25);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-box {
+    width: 380px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.modal-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 120px;
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.btn-select-pic {
+    background: none;
+    border: 1px solid #AA1D21;
+    color: #AA1D21;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.modal-actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.btn-cancel {
+    background: white;
+    border: 1px solid #333;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.btn-save {
+    background: #AA1D21;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #DDD;
+    border-radius: 8px;
+    background: #F8F8F8;
+    font-size: 15px;
+    color: #333;
+
+    appearance: none; /* Remove a seta padrão */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='14' viewBox='0 0 20 20' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M5.5 7l4.5 4.5L14.5 7'/></svg>");
+    background-repeat: no-repeat;
+    background-size: 25px;
+    background-position: right 12px center;  /* <--- AQUI VOCÊ MUDA */
+}
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    padding-left: 14px;
+    padding-right: 45px; /* espaço para o olho */
+    border: 1px solid #DDD;
+    border-radius: 8px;
+    background: #F8F8F8;
+}
+
+.input-icon-space {
+    width: 25px; /* espaço para simular ícone esquerdo */
+}
+
+.password-toggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.eye-closed {
+    display: none;
+}
+
+ .submenu-item {
+  text-decoration: none; /* Remove o underline */
+}
+
+
+  </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='assets/logo_r3.png') }}" alt="Logo R3">
+        </div>
+
+        <nav class="sidebar-menu">
+
+            {% if menu.cotacoes %}
+            <div class="dropdown" onclick="toggleDropdown()">
+                <div class="dropdown-header">
+                    <div class="dropdown-header-left">
+                        <div class="dropdown-icon">
+                            <!-- Ícone de Cotações -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                                <path d="M12 6.75V8.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 15.75V17.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9z" stroke="white" stroke-width="1.5"/>
+                                <path d="M9.75 15.75h3.375c.497 0 .974-.197 1.325-.549.352-.351.55-.828.55-1.326 0-.498-.198-.975-.55-1.326-.351-.352-.828-.549-1.325-.549h-2.25c-.497 0-.974-.198-1.325-.55A1.87 1.87 0 0 1 9 10.125c0-.498.198-.975.55-1.326.351-.352.828-.549 1.325-.549h3.375" stroke="white" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        Cotações
+                    </div>
+                    <div class="dropdown-arrow">
+                        <svg width="15" height="10" fill="none">
+                            <path d="M1 1l4 4 4-4" stroke="white" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="submenu">
+                    <a class="submenu-item" href="{{ url_for('cotacoes_lazer') }}">Lazer</a>
+                                          <a class="submenu-item" href="{{ url_for('cotacoes_corporativo') }}">Corporativo</a>
+
+                </div>
+            </div>
+            {% endif %}
+
+            {% if menu.relatorios %}
+            <a class="menu-item" href="{{ url_for('relatorios') }}">
+                <div class="menu-icon">
+                    <!-- Ícone de relatórios -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                        <path d="M9 12h6M9 15h6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M4.5 3.75h15V18.75a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18.75V3.75z" stroke="white" stroke-width="1.5"/>
+                        <path d="M7.5 2.25v3M12 2.25v3M16.5 2.25v3" stroke="white" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                Relatórios
+            </a>
+            {% endif %}
+
+            {% if menu.usuarios %}
+            <a class="menu-item active" href="{{ url_for('usuarios') }}">
+                <div class="menu-icon">
+                    <!-- Ícone de Usuários -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                        <path d="M7.875 15A4.875 4.875 0 1 0 7.875 5.25a4.875 4.875 0 0 0 0 9.75z" stroke="white" stroke-width="1.5"/>
+                        <path d="M1 18.75c1.5-2.25 4.5-3.75 6.875-3.75 2.375 0 5.375 1.5 6.875 3.75" stroke="white" stroke-width="1.5"/>
+                        <path d="M16.125 15c2.25 0 4.875 1.5 6.375 3.75" stroke="white" stroke-width="1.5"/>
+                        <path d="M14.5 5.5a5.5 5.5 0 0 1 5 9" stroke="white" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                Usuários
+            </a>
+            {% endif %}
+
+        </nav>
+
+    </aside>
+
+
+    <!-- ==============================
+         TOPBAR SUPERIOR
+    ============================== -->
+    <header class="topbar">
+
+        <div class="topbar-user">
+            <span>Bem-vinda, {{ session['user'] }}!</span>
+
+            <!-- Avatar temporário -->
+            <a href="{{ url_for('perfil') }}" class="topbar-avatar-link">
+                <img src="{{ url_for('static', filename=session['profile_pic']) }}" class="topbar-avatar" alt="Foto do usuário">
+            </a>
+
+            <!-- BARRINHA DIVISÓRIA -->
+            <div class="topbar-divider"></div>
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="topbar-logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <g clip-path="url(#clip0_3_163)">
+                    <path d="M10.5 3.75H4.5V20.25H10.5" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10.5 12H21" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17.25 8.25L21 12L17.25 15.75" stroke="#969696" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+                <defs>
+                    <clipPath id="clip0_3_163">
+                        <rect width="24" height="24" fill="white"/>
+                    </clipPath>
+                </defs>
+            </svg>
+            Sair
+        </a>
+    </header>
+
+
+    <!-- ==============================
+         CONTEÚDO – USUÁRIOS
+    ============================== -->
+    <div class="home-container">
+
+    <!-- BREADCRUMB -->
+    <h2>Perfil</h2>
+    <p class="profile-breadcrumb">
+        Perfil &nbsp;> <span>Tela inicial</span>
+    </p>
+
+ 
+    <!-- CARD PERFIL -->
+    <div class="profile-card">
+
+        <div class="profile-card-header">
+
+    <div>
+        <img src="{{ url_for('static', filename=session['profile_pic']) }}" class="profile-avatar">
+        <a id="editPhotoText" class="edit-photo-text" style="display:none;" onclick="openPicModal()">Editar foto</a>
+
+    </div>
+
+    <button id="editProfileBtn" class="profile-edit-btn">
+        <svg width="18" height="18" fill="none">
+            <path d="M3 12.75V15h2.25L13.19 7.06 10.94 4.81 3 12.75z" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M14.25 6l-2.25-2.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Editar perfil
+    </button>
+</div>
+
+        
+    <form id="profileForm">
+        <div class="profile-grid">
+
+            <div>
+                <label>Username</label>
+                <input type="text" id="usernameField" name="username"
+                    value="{{ user.username }}" disabled>
+            </div>
+
+            <div>
+                <label>E-mail</label>
+                <input type="text" id="emailField" name="email"
+                    value="{{ user.email }}" disabled>
+            </div>
+
+            <div>
+                <label>Nome</label>
+                <input type="text" id="fullNameField" name="full_name"
+                    value="{{ user.full_name }}" disabled>
+            </div>
+
+            <div>
+                <label>Tipo de usuário</label>
+                <select id="typeField" name="type" disabled>
+                    <option value="administrador"
+                        {% if user.type == "administrador" %} selected {% endif %}>
+                        Administrador
+                    </option>
+
+                    <option value="consultor"
+                        {% if user.type == "consultor" %} selected {% endif %}>
+                        Consultor
+                    </option>
+                </select>
+            </div>
+
+        </div>
+
+        <div id="editActions" class="edit-actions" style="display:none;">
+            <button id="cancelEdit" class="btn-cancel">Cancelar</button>
+            <button id="saveEdit" class="btn-save">Salvar alterações</button>
+        </div>
+    </form>
+
+
+    </div>
+
+
+<!-- CARD ALTERAR SENHA -->
+<div class="profile-card">
+
+    <h2 class="title">Alterar senha</h2>
+
+<div class="password-grid">
+
+    <!-- SENHA ATUAL -->
+    <div class="password-wrapper">
+        <label>Senha atual</label>
+        <div class="input-group">
+
+            <input type="password" id="currentPass" placeholder="Digite a senha atual" disabled>
+
+            <button type="button" class="password-toggle" onclick="togglePassword('currentPass', this)">
+                <!-- Olho ABERTO -->
+                <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+                    <path d="M16 7C6 7 2 16 2 16C2 16 6 25 16 25C26 25 30 16 30 16C30 16 26 7 16 7Z" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M16 21C18.76 21 21 18.76 21 16C21 13.24 18.76 11 16 11C13.24 11 11 13.24 11 16C11 18.76 13.24 21 16 21Z" stroke="#BCBCBC" stroke-width="1.5"/>
+                </svg>
+
+                <!-- Olho FECHADO -->
+                <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+                    <path d="M6 5L26 27" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M19.36 19.7C18.38 20.59 17.08 21.06 15.76 20.99C14.44 20.93 13.19 20.35 12.3 19.36C11.41 18.38 10.94 17.08 11 15.76C11.07 14.44 11.65 13.19 12.64 12.3" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M26.08 21.14C28.8 18.7 30 16 30 16C30 16 26 7 16 7C15.13 7 14.27 7.07 13.41 7.21" stroke="#BCBCBC" stroke-width="1.5"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- NOVA SENHA -->
+    <div class="password-wrapper">
+        <label>Nova senha</label>
+        <div class="input-group">
+
+            <input type="password" id="newPass" placeholder="Digite a nova senha" disabled>
+
+            <button type="button" class="password-toggle" onclick="togglePassword('newPass', this)">
+                <!-- olhos iguais ao acima -->
+                <!-- Olho ABERTO -->
+                <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+                    <path d="M16 7C6 7 2 16 2 16C2 16 6 25 16 25C26 25 30 16 30 16C30 16 26 7 16 7Z" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M16 21C18.76 21 21 18.76 21 16C21 13.24 18.76 11 16 11C13.24 11 11 13.24 11 16C11 18.76 13.24 21 16 21Z" stroke="#BCBCBC" stroke-width="1.5"/>
+                </svg>
+
+                <!-- Olho FECHADO -->
+                <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+                    <path d="M6 5L26 27" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M19.36 19.7C18.38 20.59 17.08 21.06 15.76 20.99C14.44 20.93 13.19 20.35 12.3 19.36C11.41 18.38 10.94 17.08 11 15.76C11.07 14.44 11.65 13.19 12.64 12.3" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M26.08 21.14C28.8 18.7 30 16 30 16C30 16 26 7 16 7C15.13 7 14.27 7.07 13.41 7.21" stroke="#BCBCBC" stroke-width="1.5"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- CONFIRMAR SENHA -->
+    <div class="password-wrapper">
+        <label>Confirmar senha</label>
+        <div class="input-group">
+
+            <input type="password" id="confirmPass" placeholder="Confirme a senha" disabled>
+
+            <button type="button" class="password-toggle" onclick="togglePassword('confirmPass', this)">
+                <!-- olhos iguais ao acima -->
+                <!-- Olho ABERTO -->
+                <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+                    <path d="M16 7C6 7 2 16 2 16C2 16 6 25 16 25C26 25 30 16 30 16C30 16 26 7 16 7Z" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M16 21C18.76 21 21 18.76 21 16C21 13.24 18.76 11 16 11C13.24 11 11 13.24 11 16C11 18.76 13.24 21 16 21Z" stroke="#BCBCBC" stroke-width="1.5"/>
+                </svg>
+
+                <!-- Olho FECHADO -->
+                <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+                    <path d="M6 5L26 27" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M19.36 19.7C18.38 20.59 17.08 21.06 15.76 20.99C14.44 20.93 13.19 20.35 12.3 19.36C11.41 18.38 10.94 17.08 11 15.76C11.07 14.44 11.65 13.19 12.64 12.3" stroke="#BCBCBC" stroke-width="1.5"/>
+                    <path d="M26.08 21.14C28.8 18.7 30 16 30 16C30 16 26 7 16 7C15.13 7 14.27 7.07 13.41 7.21" stroke="#BCBCBC" stroke-width="1.5"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+
+
+    <!-- Botão azul -->
+    <button class="btn-change-password" id="startChangePassword">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <g clip-path="url(#clip0_10_8409)">
+            <path d="M8.73469 11.5153C8.41228 10.7131 8.2477 9.85616 8.25 8.99156C8.25 5.37468 11.1637 2.36906 14.7787 2.25375C15.7022 2.22296 16.6222 2.3821 17.4816 2.72131C18.3411 3.06052 19.1218 3.57257 19.7753 4.22575C20.4288 4.87892 20.9413 5.65932 21.281 6.51861C21.6206 7.37789 21.7803 8.29776 21.75 9.22125C21.6309 12.8362 18.6253 15.75 15.0084 15.75C14.1438 15.7523 13.2869 15.5877 12.4847 15.2653L11.25 16.5H9V18.75H6.75V21H3.75C3.55109 21 3.36032 20.921 3.21967 20.7803C3.07902 20.6397 3 20.4489 3 20.25V17.5603C3.00009 17.3617 3.07899 17.1712 3.21938 17.0306L8.73469 11.5153Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16.875 8.25C17.4963 8.25 18 7.74632 18 7.125C18 6.50368 17.4963 6 16.875 6C16.2537 6 15.75 6.50368 15.75 7.125C15.75 7.74632 16.2537 8.25 16.875 8.25Z" fill="white"/>
+        </g>
+        <defs>
+            <clipPath id="clip0_10_8409">
+                <rect width="24" height="24" fill="white"/>
+            </clipPath>
+        </defs>
+    </svg>
+    Alterar senha
+</button>
+
+
+    <!-- Botões secundários -->
+    <div id="passwordActions" style="display:none; margin-top:20px; gap:20px;">
+        <button id="cancelPassword" class="btn-cancel">Cancelar</button>
+        <button id="savePassword" class="btn-save">Salvar alterações</button>
+    </div>
+
+</div>
+
+
+
+<!-- ===== MODAL DE UPLOAD DE FOTO ===== -->
+<div id="modal-upload" class="modal-overlay">
+    <div class="modal-box">
+
+        <h3 class="modal-title">Alterar foto do perfil</h3>
+
+        <!-- Pré-visualização -->
+        <img id="preview-pic" class="modal-avatar" src="{{ url_for('static', filename=session['profile_pic']) }}" alt="Prévia">
+
+        <!-- Input real (escondido) -->
+        <input type="file" id="input-pic" accept="image/*" style="display:none" onchange="previewImage(event)">
+
+        <!-- Botão estilizado para abrir o input -->
+        <button class="btn-select-pic" onclick="document.getElementById('input-pic').click()">Escolher foto</button>
+
+        <!-- Botões -->
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closePicModal()">Cancelar</button>
+            <button class="btn-save" onclick="uploadPic()">Salvar foto</button>
+        </div>
+
+    </div>
+</div>
+
+  <script>
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+
+    const openIcon = btn.querySelector(".eye-open");
+    const closedIcon = btn.querySelector(".eye-closed");
+
+    if (input.type === "password") {
+        input.type = "text";
+        openIcon.style.display = "none";
+        closedIcon.style.display = "block";
+    } else {
+        input.type = "password";
+        openIcon.style.display = "block";
+        closedIcon.style.display = "none";
+    }
+}
+</script>
+
+
+
+    <script>
+        // Impede voltar para tela de login no back do navegador
+        history.pushState(null, '', location.href);
+        window.onpopstate = function () {
+            history.pushState(null, '', location.href);
+        };
+    </script>
+
+<script>
+document.getElementById("editProfileBtn").addEventListener("click", function () {
+
+    // habilitar campos
+    document.getElementById("usernameField").disabled = false;
+    document.getElementById("emailField").disabled = false;
+    document.getElementById("fullNameField").disabled = false;
+
+    // habilitar tipo de usuário SOMENTE se for administrador
+    if ("{{ session['type'] }}" === "administrador") {
+        document.getElementById("typeField").disabled = false;
+    }
+
+
+    // mostrar "Editar foto"
+    document.getElementById("editPhotoText").style.display = "block";
+
+    // botões de ação
+    document.getElementById("editActions").style.display = "flex";
+
+    // esconder o botão de editar perfil
+    this.style.display = "none";
+});
+
+
+// cancelar volta ao estado original
+document.getElementById("cancelEdit").addEventListener("click", function (event) {
+    event.preventDefault();
+    location.reload();
+});
+
+
+// salvar alterações
+document.getElementById("saveEdit").addEventListener("click", function (event) {
+
+    event.preventDefault(); 
+    let formData = new FormData(document.getElementById("profileForm"));
+
+    fetch("/update_profile", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("Informações atualizadas com sucesso!");
+            location.reload();
+        } else {
+            alert("Erro: " + data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Erro ao enviar dados.");
+    });
+});
+</script>
+
+
+
+<script>
+    //modal de upload de foto
+function openPicModal() {
+    document.getElementById("modal-upload").style.display = "flex";
+}
+
+function closePicModal() {
+    document.getElementById("modal-upload").style.display = "none";
+}
+
+/* Pré-visualização da imagem */
+function previewImage(event) {
+    const preview = document.getElementById("preview-pic");
+    preview.src = URL.createObjectURL(event.target.files[0]);
+}
+
+/* Envio da imagem */
+function uploadPic() {
+    const file = document.getElementById("input-pic").files[0];
+
+    if (!file) {
+        alert("Selecione uma imagem primeiro!");
+        return;
+    }
+
+    let formData = new FormData();
+    formData.append("profile_pic", file);
+
+    fetch("/upload_profile_pic", {
+        method: "POST",
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert("Erro: " + data.message);
+        }
+    })
+    .catch(err => console.error(err));
+}
+</script>
+
+<script>
+// Quando clicar no botão azul "Alterar senha"
+document.getElementById("startChangePassword").addEventListener("click", function () {
+
+    // habilitar os campos
+    document.getElementById("currentPass").disabled = false;
+    document.getElementById("newPass").disabled = false;
+    document.getElementById("confirmPass").disabled = false;
+
+    // esconder botão azul
+    this.style.display = "none";
+
+    // mostrar botões Cancelar e Salvar
+    document.getElementById("passwordActions").style.display = "flex";
+});
+
+
+// Botão CANCELAR
+document.getElementById("cancelPassword").addEventListener("click", function (event) {
+    event.preventDefault();
+
+    // Desabilitar campos
+    document.getElementById("currentPass").disabled = true;
+    document.getElementById("newPass").disabled = true;
+    document.getElementById("confirmPass").disabled = true;
+
+    // Limpar
+    document.getElementById("currentPass").value = "";
+    document.getElementById("newPass").value = "";
+    document.getElementById("confirmPass").value = "";
+
+    // Ocultar ações e exibir botão azul de novo
+    document.getElementById("passwordActions").style.display = "none";
+    document.getElementById("startChangePassword").style.display = "flex";
+});
+
+
+// Botão SALVAR ALTERAÇÕES
+document.getElementById("savePassword").addEventListener("click", function (event) {
+    event.preventDefault();
+
+    const currentPass = document.getElementById("currentPass").value.trim();
+    const newPass = document.getElementById("newPass").value.trim();
+    const confirmPass = document.getElementById("confirmPass").value.trim();
+
+    if (!currentPass || !newPass || !confirmPass) {
+        alert("Preencha todos os campos.");
+        return;
+    }
+
+    if (newPass !== confirmPass) {
+        alert("A nova senha e a confirmação não coincidem.");
+        return;
+    }
+
+    fetch("/update_password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            current_password: currentPass,
+            new_password: newPass
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("Senha alterada com sucesso!");
+            location.reload();
+        } else {
+            alert("Erro: " + data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Erro ao enviar dados.");
+    });
+});
+</script>
+
+
+<script>
+      function toggleDropdown() {
+        document.querySelector(".dropdown").classList.toggle("open");
+      }
+    </script>
+
+</body>
+</html>

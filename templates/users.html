@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuários | R3 Viagens</title>
+  <link rel="icon" href="{{ url_for('static', filename='assets/icone.png') }}" type="image/png">
+
+  <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Saira", sans-serif;
+    }
+
+    body {
+        background: #F5F6FA;
+    }
+
+    /* ==========================
+       SIDEBAR – FIGMA
+    ========================== */
+    .sidebar {
+        width: 288px;
+        height: 100vh;
+        background: #00245A;
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    .sidebar-logo img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .sidebar-menu {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    /* ==========================
+       DROPDOWN (COTAÇÕES)
+    ========================== */
+    .dropdown {
+        width: 100%;
+        background: #AB1E22;
+        border-radius: 8px;
+        padding: 12px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        color: #ffffff;
+    }
+
+    .dropdown-header-left {
+        flex: 1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .dropdown-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .dropdown-arrow {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        right: 5px;
+        top: 40%;
+        transform: translateY(-40%);
+        transition: transform 0.2s ease;
+    }
+
+    .dropdown.open .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    .submenu {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        margin-left: 4px;
+        margin-top: 4px;
+    }
+
+    .dropdown.open .submenu {
+        display: flex;
+    }
+
+    .submenu-item {
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        color: white;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .submenu-item:hover {
+        background: rgba(255, 255, 255, 0.20);
+    }
+
+    /* ==========================
+       MENU ITEM NORMAL
+    ========================== */
+    .menu-item {
+        width: 100%;
+        padding: 12px;
+        border-radius: 6px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+
+    .menu-item:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .menu-item.active {
+        background: #AB1E22;
+    }
+
+    /* ==========================
+       TOPBAR SUPERIOR
+    ========================== */
+    .topbar {
+        position: fixed;
+        top: 0;
+        left: 288px;
+        width: calc(100% - 288px);
+        height: 70px;
+        background: #ffffff;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 0 40px;
+        gap: 24px;
+        border-bottom: 1px solid #E5E5E5;
+        z-index: 50;
+    }
+
+    .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-user span {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .topbar-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+    }
+
+    .topbar-logout {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        color: #555;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .topbar-logout:hover {
+        color: #AB1E22;
+    }
+
+    .topbar-logout svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .topbar-divider {
+        width: 1px;
+        height: 40px;
+        background: #CCD3E0;
+        margin: 0 18px;
+    }
+
+    /* ==========================
+       MAIN CONTENT
+    ========================== */
+    .home-container {
+        margin-left: 288px;
+        padding: 120px 40px 40px 40px; /* espaço para a topbar */
+    }
+
+    /* ==========================
+       USERS PAGE
+    ========================== */
+
+    .users-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .users-header-left .breadcrumb {
+        font-size: 14px;
+        color: #8A8FA3;
+        margin-bottom: 4px;
+    }
+
+    .users-header-left h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1C1C28;
+    }
+
+    .btn-add-user {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px;
+    height: 44px;
+    background: #AB1E22;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+
+    flex-shrink: 0;       /* impede o botão de diminuir */
+    margin-left: 16px;    /* aproxima do input */
+}
+
+    .btn-add-user:hover {
+        background: #92181C;
+    }
+
+    .users-filters {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;   /* todos começam da esquerda */
+    gap: 16px;                     /* distância controlada */
+
+    margin-bottom: 24px;
+}
+
+
+    .search-form {
+    flex: 0 0 auto;
+    width: 60%; /* ajuste fino aqui */
+}
+
+
+    .search-label,
+    .filter-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #4D4F5C;
+        margin-bottom: 8px;
+    }
+
+    .search-input-wrapper {
+    width: auto;
+    flex: 1;       /* ele cresce, mas não ocupa tudo sozinho */
+    position: relative;
+}
+
+
+.search-input {
+    width: 100%;           /* ocupa todo o wrapper */
+    height: 40px;          /* menor */
+    padding: 10px 44px 10px 14px; /* espaço à direita para o botão */
+    border-radius: 8px;
+    border: 1px solid #DEDEDE;
+    background: #FFF;
+    font-size: 14px;
+    color: #333;
+}
+
+.search-input::placeholder {
+    color: #A0A3B1;
+}
+
+.search-button {
+    position: absolute;
+    right: 12px;           /* gruda no input */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.search-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+    .filter-block {
+        min-width: 220px;
+    }
+
+    .filter-select {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 44px;
+        border-radius: 8px;
+        border: 1px solid #D7DAE2;
+        padding: 0 12px;
+        background: #fff;
+        font-size: 14px;
+        color: #4D4F5C;
+        cursor: default;
+    }
+
+    .filter-select svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* CARD / TABELA */
+    .users-card {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 20px 24px 16px 24px;
+        box-shadow: 0 4px 12px rgba(19, 33, 68, 0.04);
+        max-width: 1180px;   /* ajuste conforme a largura do input */
+        width: 100%;
+        margin-left: 0;   
+    }
+
+    .users-card-header {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1C1C28;
+        margin-bottom: 16px;
+    }
+
+    .users-table-wrapper {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #E4E6EE;
+         width: 100%;
+    }
+
+    table.users-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        font-size: 14px;
+    }
+
+    .users-table thead {
+        background: #F5F6FA;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #E4E6EE;
+        color: #4D4F5C;
+        vertical-align: middle;
+    }
+
+    .users-table th {
+        font-weight: 600;
+        font-size: 13px;
+        color: #8A8FA3;
+    }
+
+    .users-table tbody tr:hover {
+        background: #FAFBFF;
+    }
+
+    .actions-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .icon-button {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon-button svg {
+        width: 18px;
+        height: 18px;
+        stroke: #8A8FA3;
+    }
+
+    .icon-button.delete svg {
+        stroke: #E20F13;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 24px 16px;
+        color: #8A8FA3;
+        font-style: italic;
+    }
+
+    /* FOOTER */
+    .users-footer {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #8A8FA3;
+    }
+
+    .pagination {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page-link,
+    .page-ellipsis {
+        min-width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        text-decoration: none;
+        color: #4D4F5C;
+        cursor: pointer;
+    }
+
+    .page-link.active {
+        background: #AB1E22;
+        color: #fff;
+        border-color: #AB1E22;
+    }
+
+    .page-link:hover:not(.active) {
+        border-color: #D7DAE2;
+        background: #F5F6FA;
+    }
+
+    .page-ellipsis {
+        cursor: default;
+    }
+
+
+.users-table-wrapper {
+    max-width: 1000px;
+    margin-left: 0; 
+}
+
+    /* ==========================
+   CONTAINER PRINCIPAL DE USUÁRIOS
+   (Input + Botão + Tabela)
+========================== */
+.users-container {
+    width: 100%;
+    max-width: 1350px;      /* limite proporcional ao layout */
+    margin-left: 0;         /* alinhado com o título */
+    margin-top: 8px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;              /* espaçamento proporcional entre input/tabela */
+}
+
+/* Ajuste para filtros (input + botão) dentro do container */
+.users-container .users-filters {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 16px;
+}
+
+/* Ajuste da tabela para seguir o container */
+.users-container .users-card {
+    width: 78%;
+    max-width: 100%;         /* nunca ultrapassa o container */
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 12px rgba(19, 33, 68, 0.05);
+}
+
+/* Wrapper da tabela totalmente responsivo */
+.users-container .users-table-wrapper {
+    width: 100%;
+    border: 1px solid #E4E6EE;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+
+
+    @media (max-width: 1024px) {
+        .users-filters {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-block {
+            min-width: 0;
+        }
+
+        .home-container {
+            padding: 100px 16px 24px 16px;
+            margin-left: 0;
+        }
+
+        .topbar {
+            left: 0;
+            width: 100%;
+        }
+
+        .sidebar {
+            display: none; /* responsivo simples por enquanto */
+        }
+    }
+
+/* Remove seta padrão do select */
+.modal-box select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background: #FFF;
+    border: 1px solid #000;
+    border-radius: 8px;
+    padding: 10px 14px;     /* reduz padding da direita */
+    font-size: 14px;
+    outline: none;
+}
+
+
+
+/* OVERLAY */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.45);
+    display: none; /* escondido inicialmente */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* CAIXA DO MODAL */
+.modal-box {
+    width: 480px;
+    background: white;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.20);
+    animation: scaleIn .3s ease;
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-box h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+/* CAMPOS */
+.modal-box form label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #444;
+    margin-top: 12px;
+    display: block;
+}
+
+.modal-box form input,
+.modal-box form select {
+    width: 100%;
+    height: 42px;
+    margin-top: 6px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #DEDEDE;
+    font-size: 14px;
+}
+
+/* SENHA COM OLHINHO */
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper .toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+}
+
+/* AÇÕES */
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+}
+
+.btn-cancel {
+    width: 45%;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid #999;
+    background: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-confirm {
+    width: 45%;
+    height: 42px;
+    border-radius: 999px;
+    background: #AB1E22;
+    border: none;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-confirm:hover {
+    background: #8e171b;
+}
+
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding: 10px 44px 10px 14px; /* espaço p/ o olho */
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid #C8C8C8;
+    font-size: 14px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle svg {
+    display: none;
+}
+
+/* Olho aberto visível por padrão */
+.password-toggle .eye-open {
+    display: block;
+}
+
+/* Quando clicar, troca os ícones via classe */
+.password-toggle.active .eye-open {
+    display: none;
+}
+
+.password-toggle.active .eye-closed {
+    display: block;
+}
+
+
+/* Fundo */
+.modal-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: none; /* começa invisível */
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+/* Caixa */
+.modal-confirm-box {
+    background: #ffffff;
+    width: 420px;
+    padding: 32px;
+    border-radius: 16px;
+    text-align: center;
+    animation: scaleIn 0.25s ease;
+}
+
+/* Ícone */
+.success-icon {
+    margin-bottom: 20px;
+}
+
+/* Texto */
+.modal-confirm-box h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1C1C28;
+    margin-bottom: 24px;
+}
+
+/* Botão verde */
+.success-btn {
+    background: #10B981;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+}
+
+.success-btn:hover {
+    background: #0e9468;
+}
+
+/* Animação */
+@keyframes scaleIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+
+.success-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.success-btn {
+    padding: 14px 28px;
+    background: #10B981;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.success-btn:hover {
+    background: #0EA774;
+}
+
+.cancel-btn {
+    padding: 14px 28px;
+    background: #AB1E22;   /* Vermelho R3 */
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    background: #8F0E12;
+}
+
+.modal-confirm-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none; justify-content: center; align-items: center;
+  z-index: 999;
+}
+
+.modal-confirm-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+  color: #AA1D21;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.modal-message {
+  color: #999;
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.btn-outline {
+  padding: 10px 28px;
+  border: 2px solid #AA1D21;
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-outline:hover {
+  background: #f3f3f3;
+}
+
+.btn-danger {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 999px;
+  background: #AA1D21;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-danger:hover {
+  background: #8d1212;
+}
+
+
+.form-label {
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 4px;
+  display: block;
+  font-weight: 600;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #AA1D21;
+  box-shadow: 0 0 0 1px #AA1D21;
+}
+
+.password-toggle .eye-open {
+  display: inline;
+}
+
+.password-toggle .eye-closed {
+  display: none;
+}
+
+.password-toggle.password-visible .eye-open {
+  display: none;
+}
+
+.password-toggle.password-visible .eye-closed {
+  display: inline;
+}
+
+ .submenu-item {
+  text-decoration: none; /* Remove o underline */
+}
+
+
+  </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='assets/logo_r3.png') }}" alt="Logo R3">
+        </div>
+
+        <nav class="sidebar-menu">
+
+            {% if menu.cotacoes %}
+            <div class="dropdown" onclick="toggleDropdown()">
+                <div class="dropdown-header">
+                    <div class="dropdown-header-left">
+                        <div class="dropdown-icon">
+                            <!-- Ícone de Cotações -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                                <path d="M12 6.75V8.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 15.75V17.25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9z" stroke="white" stroke-width="1.5"/>
+                                <path d="M9.75 15.75h3.375c.497 0 .974-.197 1.325-.549.352-.351.55-.828.55-1.326 0-.498-.198-.975-.55-1.326-.351-.352-.828-.549-1.325-.549h-2.25c-.497 0-.974-.198-1.325-.55A1.87 1.87 0 0 1 9 10.125c0-.498.198-.975.55-1.326.351-.352.828-.549 1.325-.549h3.375" stroke="white" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        Cotações
+                    </div>
+                    <div class="dropdown-arrow">
+                        <svg width="15" height="10" fill="none">
+                            <path d="M1 1l4 4 4-4" stroke="white" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="submenu">
+                    <a class="submenu-item" href="{{ url_for('cotacoes_lazer') }}">Lazer</a>
+                      <a class="submenu-item" href="{{ url_for('cotacoes_corporativo') }}">Corporativo</a>
+
+                </div>
+            </div>
+            {% endif %}
+
+            {% if menu.relatorios %}
+            <a class="menu-item" href="{{ url_for('relatorios') }}">
+                <div class="menu-icon">
+                    <!-- Ícone de relatórios -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                        <path d="M9 12h6M9 15h6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M4.5 3.75h15V18.75a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18.75V3.75z" stroke="white" stroke-width="1.5"/>
+                        <path d="M7.5 2.25v3M12 2.25v3M16.5 2.25v3" stroke="white" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                Relatórios
+            </a>
+            {% endif %}
+
+            {% if menu.usuarios %}
+            <a class="menu-item active" href="{{ url_for('usuarios') }}">
+                <div class="menu-icon">
+                    <!-- Ícone de Usuários -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+                        <path d="M7.875 15A4.875 4.875 0 1 0 7.875 5.25a4.875 4.875 0 0 0 0 9.75z" stroke="white" stroke-width="1.5"/>
+                        <path d="M1 18.75c1.5-2.25 4.5-3.75 6.875-3.75 2.375 0 5.375 1.5 6.875 3.75" stroke="white" stroke-width="1.5"/>
+                        <path d="M16.125 15c2.25 0 4.875 1.5 6.375 3.75" stroke="white" stroke-width="1.5"/>
+                        <path d="M14.5 5.5a5.5 5.5 0 0 1 5 9" stroke="white" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                Usuários
+            </a>
+            {% endif %}
+
+        </nav>
+
+    </aside>
+
+
+    <!-- ==============================
+         TOPBAR SUPERIOR
+    ============================== -->
+    <header class="topbar">
+
+        <div class="topbar-user">
+            <span>Bem-vinda, {{ session['user'] }}!</span>
+
+            <!-- Avatar temporário -->
+            <a href="{{ url_for('perfil') }}" class="topbar-avatar-link">
+                <img src="{{ url_for('static', filename=session['profile_pic']) }}" class="topbar-avatar" alt="Foto do usuário">
+            </a>
+
+            <!-- BARRINHA DIVISÓRIA -->
+            <div class="topbar-divider"></div>
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="topbar-logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <g clip-path="url(#clip0_3_163)">
+                    <path d="M10.5 3.75H4.5V20.25H10.5" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10.5 12H21" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17.25 8.25L21 12L17.25 15.75" stroke="#969696" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+                <defs>
+                    <clipPath id="clip0_3_163">
+                        <rect width="24" height="24" fill="white"/>
+                    </clipPath>
+                </defs>
+            </svg>
+            Sair
+        </a>
+    </header>
+
+
+    <!-- ==============================
+         CONTEÚDO – USUÁRIOS
+    ============================== -->
+    <div class="home-container">
+
+        <!-- Cabeçalho -->
+        <div class="users-header">
+            <div class="users-header-left">
+                <div class="breadcrumb">Usuários &gt; Tela inicial</div>
+                <h1>Usuários</h1>
+            </div>
+
+            
+        </div>
+
+      <div class="users-container">
+
+    <!-- Busca e filtro -->
+    <div class="users-filters">
+        <form method="get" action="{{ url_for('usuarios') }}" class="search-form">
+            <label class="search-label">Buscar por cliente</label>
+            <div class="search-input-wrapper">
+                <input
+                    type="text"
+                    name="q"
+                    class="search-input"
+                    placeholder="Digite o nome"
+                    value="{{ search or '' }}"
+                >
+                <button type="submit" class="search-button" aria-label="Buscar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <g clip-path="url(#clip0_10_1627)">
+                        <path d="M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z" stroke="#AB1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15.8047 15.8035L21.0012 21" stroke="#AB1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </g>
+                        <defs>
+                        <clipPath id="clip0_10_1627">
+                        <rect width="24" height="24" fill=none/>
+                        </clipPath>
+                        </defs>
+                    </svg>
+                </button>
+            </div>
+        </form>
+
+        <!-- Botão de novo usuário -->
+        <a href="#" class="btn-add-user">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M0.75 6.75H12.75" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6.75 0.75V12.75" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Adicionar novo usuário
+        </a>
+    </div>
+
+    <!-- Card + tabela -->
+    <section class="users-card">
+        <div class="users-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Listagem de Usuários</span>
+
+            <!-- Botão Atualizar -->
+            <button class="btn-add-user" onclick="location.reload()">
+                Atualizar Tabela
+            </button>
+            </div>
+
+        <div class="users-table-wrapper">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>ID</th>
+                        <th>Senha</th>
+                        <th>E-mail</th>
+                        <th>Tipo de Usuário</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if usuarios %}
+                        {% for u in usuarios %}
+                        <tr>
+                            <td>{{ u["user"] }}</td>
+                            <td>{{ u["id"] }}</td>
+                            <td>{{ u["password"] }}</td>
+                            <td>{{ u["email"] }}</td>
+                            <td>{{ u["type"]|capitalize }}</td>
+                            <td class="actions-cell">
+                                <!-- Editar -->
+                                <button class="icon-button edit" 
+                                        title="Editar usuário"
+                                        data-id="{{ u['id'] }}"
+                                        data-name="{{ u['full_name'] }}"
+                                        data-email="{{ u['email'] }}"
+                                        data-type="{{ u['type'] }}"
+                                        data-user="{{ u['user'] }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <path d="M4 20H20" stroke="#8A8FA3" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M5 15.5L14.5 6L18 9.5L8.5 19H5V15.5Z" stroke="#8A8FA3" stroke-width="1.5" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+
+                                <!-- Excluir -->
+                                <button class="icon-button delete" title="Excluir usuário" data-id="{{ u['id'] }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+                                        <path d="M5 7H19" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M10 10V17" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M14 10V17" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M6 7L7 19C7 19.5523 7.44772 20 8 20H16C16.5523 20 17 19.5523 17 19L18 7" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                        <path d="M9 7V5C9 4.44772 9.44772 4 10 4H14C14.5523 4 15 4.44772 15 5V7" stroke="#E20F13" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                Nenhum usuário encontrado.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="users-footer">
+            <span class="results-info">
+                {% if total > 0 %}
+                    Exibindo {{ display_start }}–{{ display_end }} de {{ total }} resultados
+                {% else %}
+                    Nenhum resultado para exibir
+                {% endif %}
+            </span>
+
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a class="page-link" href="{{ url_for('usuarios', page=page-1, q=search) }}">&lt;</a>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == 1 or p == total_pages or (p >= page-1 and p <= page+1) %}
+                        {% if p == page %}
+                            <span class="page-link active">{{ p }}</span>
+                        {% else %}
+                            <a class="page-link" href="{{ url_for('usuarios', page=p, q=search) }}">{{ p }}</a>
+                        {% endif %}
+                    {% elif p == 2 and page > 3 %}
+                        <span class="page-ellipsis">...</span>
+                    {% elif p == total_pages-1 and page < total_pages-2 %}
+                        <span class="page-ellipsis">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                    <a class="page-link" href="{{ url_for('usuarios', page=page+1, q=search) }}">&gt;</a>
+                {% endif %}
+            </div>
+        </div>
+
+    </section>
+
+</div>
+
+<!-- ======================
+     MODAL – ADICIONAR USUÁRIO
+====================== -->
+<div id="modal-add-user" class="modal-overlay">
+    <div class="modal-box">
+
+        <h2>Adicionar novo usuário</h2>
+
+        <form id="form-add-user">
+
+            <label>Nome (Opcional)</label>
+            <input id="nameField" type="text" placeholder="Digite o nome completo">
+
+            <label>E-mail (Opcional)</label>
+            <input id="emailField" type="email" placeholder="Digite o e-mail">
+
+            <label>Tipo de usuário</label>
+            <select id="typeField">
+                <option disabled selected>Selecione</option>
+                <option value="administrador">Administrador</option>
+                <option value="consultor">Consultor</option>
+            </select>
+
+            <label>Usuário</label>
+            <input id="usernameField" type="text" placeholder="Digite o nome do usuário">
+
+            <label>Senha</label>
+            <div class="password-wrapper">
+                <input type="password" id="passwordField" placeholder="Crie uma senha">
+
+                <!-- Botão de olho -->
+                <button type="button" class="password-toggle" id="toggleEye" aria-label="Mostrar senha" aria-pressed="false">
+
+                    <!-- Olho aberto -->
+                    <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 7C6 7 2 16 2 16C2 16 6 25 16 25C26 25 30 16 30 16C30 16 26 7 16 7Z" stroke="#BCBCBC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 21C18.7614 21 21 18.7614 21 16C21 13.2386 18.7614 11 16 11C13.2386 11 11 13.2386 11 16C11 18.7614 13.2386 21 16 21Z" stroke="#BCBCBC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+
+                    <!-- Olho fechado -->
+                    <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32" fill="none">
+                        <path d="M6 5L26 27" stroke="#BCBCBC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19.3637 19.7C18.3824 20.5921 17.0869 21.0579 15.7622 20.9948C14.4375 20.9318 13.1921 20.345 12.3 19.3637C11.4079 18.3824 10.9421 17.0869 11.0052 15.7622C11.0682 14.4375 11.6549 13.1921 12.6362 12.3" stroke="#BCBCBC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M26.074 21.137C28.799 18.697 30 16 30 16C30 16 26 7 16 7C15.1341 6.99883 14.2695 7.06907 13.415 7.21001" stroke="#BCBCBC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+
+                </button>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="close-modal">Cancelar</button>
+                <button type="submit" class="btn-confirm">Adicionar</button>
+            </div>
+</form>
+
+    </div>
+</div>
+
+<!-- Modal de Confirmação -->
+
+<div id="modal-success" class="modal-confirm-overlay" style="display: none;">
+
+    <div class="modal-confirm-box">
+
+        <div class="success-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="30" fill="#ECFDF5"/>
+                <path d="M22 33L28 39L42 25" stroke="#10B981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <h3>Usuário adicionado com sucesso!</h3>
+
+        
+        <div class="success-buttons">
+            <button id="btn-success-logout" class="success-btn" id="close-success">
+                Entrar na sua conta
+            </button>
+
+            <button id="btn-fechar-modal" class="cancel-btn" id="close-success-cancel">
+                Fechar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Modal de Exclusão -->
+<div id="modal-delete" class="modal-confirm-overlay" style="display: none;">
+  <div class="modal-confirm-box">
+    <h3 class="modal-title">Excluir usuário</h3>
+    <p class="modal-message">Tem certeza que deseja excluir o usuário selecionado?</p>
+
+    <div class="modal-buttons">
+      <button class="btn-outline" id="cancel-delete">Cancelar</button>
+      <button class="btn-danger" id="confirm-delete">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edição de Usuário -->
+<!-- Modal de Edição de Usuário -->
+<div id="modal-edit-user" class="modal-overlay" style="display: none;">
+  <div class="modal-box">
+
+    <h2>Editar usuário</h2>
+
+    <form id="form-edit-user">
+
+      <label>Nome (Opcional)</label>
+      <input id="editName" type="text" placeholder="Digite o nome completo">
+
+      <label>E-mail (Opcional)</label>
+      <input id="editEmail" type="email" placeholder="Digite o e-mail">
+
+      <label>Tipo de usuário</label>
+      <select id="editType">
+        <option disabled selected>Selecione</option>
+        <option value="administrador">Administrador</option>
+        <option value="consultor">Consultor</option>
+        <option value="editor">Editor</option>
+      </select>
+
+      <label>Usuário</label>
+      <input id="editUsername" type="text" placeholder="Digite o nome do usuário">
+
+      <label>Senha</label>
+      <div class="password-wrapper">
+        <input type="password" id="editPassword" placeholder="Deixe em branco para manter a mesma senha">
+
+        <!-- Botão de olho -->
+        <button type="button" class="password-toggle" id="toggleEditEye" aria-label="Mostrar senha" aria-pressed="false">
+        
+        <!-- Olho aberto -->
+        <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32" fill="none">
+            <path d="M16 7C6 7 2 16 2 16C2 16 6 25 16 25C26 25 30 16 30 16C30 16 26 7 16 7Z" stroke="#BCBCBC" stroke-width="1.5"/>
+            <path d="M16 21C18.76 21 21 18.76 21 16C21 13.24 18.76 11 16 11C13.24 11 11 13.24 11 16C11 18.76 13.24 21 16 21Z" stroke="#BCBCBC" stroke-width="1.5"/>
+        </svg>
+
+        <!-- Olho fechado -->
+        <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32" fill="none">
+            <path d="M6 5L26 27" stroke="#BCBCBC" stroke-width="1.5"/>
+            <path d="M19.36 19.7C18.38 20.59 17.08 21.05 15.76 20.99C14.43 20.93 13.19 20.34 12.3 19.36C11.41 18.38 10.94 17.08 11.00 15.76C11.06 14.43 11.65 13.19 12.63 12.3" stroke="#BCBCBC" stroke-width="1.5"/>
+            <path d="M26.07 21.13C28.8 18.69 30 16 30 16C30 16 26 7 16 7C15.13 7 14.26 7.07 13.41 7.21" stroke="#BCBCBC" stroke-width="1.5"/>
+        </svg>
+
+        </button>
+
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="cancel-edit">Cancelar</button>
+        <button type="submit" class="btn-confirm" id="save-edit">Salvar alterações</button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+    <script>
+
+        //ÍCONE DO OLHO
+        function toggleDropdown() {
+            document.querySelector('.dropdown').classList.toggle('open');
+        }
+
+        // Impede voltar para tela de login no back do navegador
+        history.pushState(null, '', location.href);
+        window.onpopstate = function () {
+            history.pushState(null, '', location.href);
+        };
+    </script>
+
+<script>
+    const modal = document.getElementById("modal-add-user");
+    const btnOpen = document.querySelector(".btn-add-user");
+    const btnClose = document.getElementById("close-modal");
+
+    btnOpen.addEventListener("click", (e) => {
+        e.preventDefault();
+        modal.style.display = "flex";
+    });
+
+    btnClose.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    // Fecha clicando fora da caixa
+    modal.addEventListener("click", function(e) {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    // Mostrar/ocultar senha
+    document.querySelector(".toggle-password").addEventListener("click", () => {
+        const input = document.querySelector(".password-wrapper input");
+        input.type = input.type === "password" ? "text" : "password";
+    });
+</script>
+
+<script>
+const toggle = document.getElementById("toggleEye");
+const password = document.getElementById("passwordField");
+
+toggle.addEventListener("click", () => {
+    const isVisible = password.type === "text";
+
+    password.type = isVisible ? "password" : "text";
+
+    toggle.classList.toggle("active", !isVisible);
+
+    toggle.setAttribute("aria-pressed", String(!isVisible));
+});
+</script>
+
+
+<script>
+
+    //MODAL DE CONFIRMAÇÃO
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("form-add-user");
+    const successModal = document.getElementById("modal-success");
+    const btnFechar = document.getElementById("btn-fechar-modal");     // botão vermelho
+    const btnLogout = document.getElementById("btn-success-logout");   // botão verde
+
+    // Submissão do formulário
+    if (form) {
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById("nameField").value.trim();
+            const email = document.getElementById("emailField").value.trim();
+            const type = document.getElementById("typeField").value;
+            const user = document.getElementById("usernameField").value.trim();
+            const password = document.getElementById("passwordField").value.trim();
+
+            if (!user || !password || type === "Selecione") {
+                alert("Preencha os campos obrigatórios.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/add_user", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, type, user, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById("modal-add-user").style.display = "none";
+                    successModal.style.display = "flex";
+                } else {
+                    alert(result.error || "Erro ao salvar usuário.");
+                }
+
+            } catch (error) {
+                console.error("Erro:", error);
+                alert("Falha ao conectar com o servidor.");
+            }
+        });
+    }
+
+    // Botão vermelho — fechar modal
+    if (btnFechar) {
+        btnFechar.addEventListener("click", function () {
+            successModal.style.display = "none";
+        });
+    }
+
+    // Botão verde — fazer logout e voltar ao login
+    if (btnLogout) {
+        btnLogout.addEventListener("click", function () {
+            window.location.href = "/logout";
+        });
+    }
+});
+</script>
+
+<script>
+
+    //MODAL DE EXCLUSÃO
+document.addEventListener("DOMContentLoaded", function () {
+  const modalDelete = document.getElementById("modal-delete");
+  const cancelBtn = document.getElementById("cancel-delete");
+  const confirmBtn = document.getElementById("confirm-delete");
+
+  let userIdToDelete = null;
+
+  // 1. Abrir modal ao clicar no botão de excluir
+  document.querySelectorAll(".icon-button.delete").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      userIdToDelete = this.getAttribute("data-id"); // captura o ID do botão clicado
+      modalDelete.style.display = "flex"; // exibe o modal
+    });
+  });
+
+  // 2. Fechar modal ao clicar em "Cancelar"
+  cancelBtn.addEventListener("click", function () {
+    modalDelete.style.display = "none";
+    userIdToDelete = null;
+  });
+
+  // 3. Confirmar exclusão ao clicar em "Excluir"
+  confirmBtn.addEventListener("click", function () {
+    if (userIdToDelete) {
+      fetch(`/delete_user/${userIdToDelete}`, {
+        method: "DELETE"
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload(); // recarrega a tabela
+          } else {
+            alert("Erro ao excluir: " + (data.error || "erro desconhecido."));
+          }
+        })
+        .catch(() => {
+          alert("Erro de conexão com o servidor.");
+        });
+    }
+  });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const modalEdit = document.getElementById("modal-edit-user");
+  const cancelEdit = document.getElementById("cancel-edit");
+  const saveEdit = document.getElementById("save-edit");
+
+  // Campos do modal
+  const inputName = document.getElementById("editName");
+  const inputEmail = document.getElementById("editEmail");
+  const inputType = document.getElementById("editType");
+  const inputUsername = document.getElementById("editUsername");
+  const inputPassword = document.getElementById("editPassword");
+  const toggleEyeEdit = document.getElementById("toggleEditEye");
+
+  let currentUserId = null;
+
+  // 1. Clicar em editar
+  document.querySelectorAll(".icon-button.edit").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      currentUserId = this.getAttribute("data-id");
+
+      // Preencher campos
+      inputName.value = this.getAttribute("data-name") || "";
+      inputEmail.value = this.getAttribute("data-email") || "";
+      inputType.value = this.getAttribute("data-type") || "consultor";
+      inputUsername.value = this.getAttribute("data-user") || "";
+      inputPassword.value = "";
+
+      modalEdit.style.display = "flex";
+    });
+  });
+
+  // 2. Cancelar edição
+  cancelEdit.addEventListener("click", function () {
+    modalEdit.style.display = "none";
+    currentUserId = null;
+  });
+
+  // 3. Salvar alterações
+  saveEdit.addEventListener("click", async function () {
+    if (!currentUserId) return;
+
+    const payload = {
+      name: inputName.value.trim(),
+      email: inputEmail.value.trim(),
+      type: inputType.value,
+      user: inputUsername.value.trim(),
+      password: inputPassword.value.trim()  // pode ser vazio
+    };
+
+    try {
+      const response = await fetch(`/edit_user/${currentUserId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        modalEdit.style.display = "none";
+        location.reload();  // recarrega tabela
+      } else {
+        alert(result.error || "Erro ao salvar alterações.");
+      }
+
+    } catch (error) {
+      alert("Erro ao conectar com o servidor.");
+      console.error(error);
+    }
+  });
+
+  // 4. Alternar visibilidade da senha
+  if (toggleEyeEdit && inputPassword) {
+    toggleEyeEdit.addEventListener("click", function () {
+      const isHidden = inputPassword.type === "password";
+      inputPassword.type = isHidden ? "text" : "password";
+      toggleEyeEdit.classList.toggle("password-visible", isHidden);
+      toggleEyeEdit.setAttribute("aria-pressed", String(isHidden));
+    });
+
+    toggleEyeEdit.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleEyeEdit.click();
+      }
+    });
+  }
+});
+</script>
+
+
+
+</body>
+</html>
