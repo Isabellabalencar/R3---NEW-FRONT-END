@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 from backend.templates_corporate import corporate_quote_template
 import uuid
-from backend.templates_corporate import generate_aereo_section
+from backend.templates_corporate import generate_aereo_section, generate_hotel_section, generate_locacao_section, generate_textual_service_section
 import traceback
 import re
 
@@ -660,16 +660,22 @@ def send_email():
     texto = request.form.get("texto_cotacao")
 
     nome_consultor = session.get("user", "Consultor R3")
-
     servicos = [s.strip().lower() for s in cotacoes.split(",")] if cotacoes else []
 
     aereo_texto_formatado = ""
+    hotel_texto_formatado = ""
+    locacao_texto_formatado = ""
+    seguro_texto = ""
+    passeios_texto = ""
+    transfers_texto = ""
+    trens_texto = ""
+    outros_texto = ""
 
+    # ✈️ AÉREO
     if ("aéreo" in servicos or "aereo" in servicos) and texto:
         texto_normalizado = "\n".join(
             [ln.strip() for ln in texto.splitlines() if ln.strip()]
         )
-
         texto_normalizado = re.sub(
             r"(Econ(?:ô)?mic)(\d{2,4})", r"\1\n\2",
             texto_normalizado, flags=re.IGNORECASE
@@ -684,14 +690,51 @@ def send_email():
             tipo_viagem=tipo_viagem
         )
 
+    # 🏨 HOSPEDAGEM
+    if "hotel" in servicos or "hospedagem" in servicos:
+        hotel_texto_formatado = generate_hotel_section(raw_data=texto)
+
+    # 🚗 LOCAÇÃO
+    if "locacao" in servicos or "locação" in servicos or "carro" in servicos or "veículo" in servicos:
+        locacao_texto_formatado = generate_locacao_section(raw_data=texto)
+
+    # 🛡️ SEGURO VIAGEM
+    if "seguro" in servicos or "seguro viagem" in servicos:
+        seguro_texto = generate_textual_service_section(raw_data=texto, categoria="Seguro Viagem")
+
+    # 🎟️ PASSEIOS
+    if "passeios" in servicos:
+        passeios_texto = generate_textual_service_section(raw_data=texto, categoria="Passeios")
+
+    # 🚐 TRANSFERS
+    if "transfers" in servicos:
+        transfers_texto = generate_textual_service_section(raw_data=texto, categoria="Transfers")
+
+    # 🚆 TRENS
+    if "trens" in servicos:
+        trens_texto = generate_textual_service_section(raw_data=texto, categoria="Trens")
+
+    # 📦 OUTROS
+    if "outros" in servicos:
+        outros_texto = generate_textual_service_section(raw_data=texto, categoria="Outros")
+
+    # 🔧 GERAÇÃO DO E-MAIL FINAL
     corpo_email = corporate_quote_template(
         client_name=nome_cliente,
         consultant_name=nome_consultor,
         raw_data=texto,
         selected_services=cotacoes,
-        aereo_texto_formatado=aereo_texto_formatado
+        aereo_texto_formatado=aereo_texto_formatado,
+        hotel_texto_formatado=hotel_texto_formatado,
+        locacao_texto_formatado=locacao_texto_formatado,
+        seguro_texto=seguro_texto,
+        passeios_texto=passeios_texto,
+        transfers_texto=transfers_texto,
+        trens_texto=trens_texto,
+        outros_texto=outros_texto
     )
 
+    # 📧 ENVIO DO E-MAIL
     msg = Message(
         subject=f"Cotação Corporativa | {empresa}",
         recipients=[email_cliente],
@@ -714,7 +757,6 @@ def send_email():
 
 
 
-
 @app.route("/preview-email", methods=["POST"])
 def preview_email():
     texto = request.form.get("texto_cotacao")
@@ -723,20 +765,52 @@ def preview_email():
 
     servicos = [s.strip().lower() for s in cotacoes.split(",")] if cotacoes else []
 
-    aereo_texto_formatado = ""
+    preview_text = ""
 
+    # ====== EXIBIR TEXTO ORIGINAL ======
+    if texto:
+        preview_text += f"======= TEXTO ORIGINAL BRUTO =======\n{texto.strip()}\n\n======= PRÉ-VISUALIZAÇÃO FORMATADA =======\n"
+
+    # ====== AÉREO ======
     if ("aéreo" in servicos or "aereo" in servicos) and texto:
         texto_normalizado = "\n".join(
             [ln.strip() for ln in texto.splitlines() if ln.strip()]
         )
-
-        aereo_texto_formatado = generate_aereo_section(
+        preview_text += generate_aereo_section(
             raw_data=texto_normalizado,
             tipo_viagem=tipo_viagem
         )
 
-    # 🔥 Preview retorna APENAS TEXTO PURO
-    return aereo_texto_formatado or "Nenhum conteúdo para pré-visualização."
+    # ====== HOSPEDAGEM ======
+    if "hotel" in servicos or "hospedagem" in servicos:
+        preview_text += "\n\n" + generate_hotel_section(raw_data=texto)
+
+    # ====== LOCAÇÃO ======
+    if "locacao" in servicos or "locação" in servicos or "carro" in servicos or "veículo" in servicos:
+        preview_text += "\n\n" + generate_locacao_section(raw_data=texto)
+
+    # ====== SEGURO VIAGEM ======
+    if "seguro" in servicos or "seguro viagem" in servicos:
+        preview_text += "\n\n🛡️ SEGURO VIAGEM\n\n" + generate_textual_service_section(raw_data=texto, categoria="Seguro Viagem")
+
+    # ====== PASSEIOS ======
+    if "passeios" in servicos:
+        preview_text += "\n\n🎟️ PASSEIOS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Passeios")
+
+    # ====== TRANSFERS ======
+    if "transfers" in servicos:
+        preview_text += "\n\n🚐 TRANSFERS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Transfers")
+
+    # ====== TRENS ======
+    if "trens" in servicos:
+        preview_text += "\n\n🚆 TRENS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Trens")
+
+    # ====== OUTROS ======
+    if "outros" in servicos:
+        preview_text += "\n\n📦 OUTROS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Outros")
+
+    return preview_text or "Nenhum conteúdo para pré-visualização."
+
 
 
 

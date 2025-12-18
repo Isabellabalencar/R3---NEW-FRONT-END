@@ -1,306 +1,409 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Relatórios | R3 Viagens</title>
-  <link rel="icon" href="{{ url_for('static', filename='assets/icone.png') }}" type="image/png" />
-  <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relatórios | R3 Viagens</title>
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='assets/icone.png') }}"
+      type="image/png"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Saira", sans-serif;
-    }
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Saira", sans-serif;
+      }
 
-    body {
-      background: #f5f6fa;
-    }
+      body {
+        background: #f5f6fa;
+      }
 
-    .sidebar {
-      width: 288px;
-      height: 100vh;
-      background: #00245a;
-      padding: 32px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 24px;
-      position: fixed;
-      top: 0;
-      left: 0;
-    }
+      .sidebar {
+        width: 288px;
+        height: 100vh;
+        background: #00245a;
+        padding: 32px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
 
-    .sidebar-logo img {
-      width: 90px;
-      height: 90px;
-    }
+      .sidebar-logo img {
+        width: 90px;
+        height: 90px;
+      }
 
-    .sidebar-menu {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+      .sidebar-menu {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
 
-    .dropdown {
-      width: 100%;
-      background: #ab1e22;
-      border-radius: 8px;
-      padding: 12px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+      .dropdown {
+        width: 100%;
+        background: #ab1e22;
+        border-radius: 8px;
+        padding: 12px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
 
-    .dropdown-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      position: relative;
-      color: #ffffff;
-    }
+      .dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        color: #ffffff;
+      }
 
-    .dropdown-header-left {
-      flex: 1;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+      .dropdown-header-left {
+        flex: 1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
 
-    .dropdown-arrow {
-      width: 20px;
-      height: 20px;
-      position: absolute;
-      right: 5px;
-      top: 40%;
-      transform: translateY(-40%);
-      transition: transform 0.2s ease;
-    }
+      .dropdown-arrow {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        right: 5px;
+        top: 40%;
+        transform: translateY(-40%);
+        transition: transform 0.2s ease;
+      }
 
-    .dropdown.open .dropdown-arrow {
-      transform: rotate(180deg);
-    }
+      .dropdown.open .dropdown-arrow {
+        transform: rotate(180deg);
+      }
 
-    .submenu {
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-      margin-left: 4px;
-      margin-top: 4px;
-    }
+      .submenu {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        margin-left: 4px;
+        margin-top: 4px;
+      }
 
-    .dropdown.open .submenu {
-      display: flex;
-    }
+      .dropdown.open .submenu {
+        display: flex;
+      }
 
-    .submenu-item {
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      color: white;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+      .submenu-item {
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        color: white;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
 
-    .submenu-item:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
+      .submenu-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
 
-    .menu-item {
-      width: 100%;
-      padding: 12px;
-      border-radius: 6px;
-      color: white;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
+      .menu-item {
+        width: 100%;
+        padding: 12px;
+        border-radius: 6px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+      }
 
-    .menu-item:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
+      .menu-item:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
 
-    .topbar {
-      position: fixed;
-      top: 0;
-      left: 288px;
-      width: calc(100% - 288px);
-      height: 70px;
-      background: #ffffff;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      padding: 0 40px;
-      gap: 24px;
-      border-bottom: 1px solid #e5e5e5;
-      z-index: 50;
-    }
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 288px;
+        width: calc(100% - 288px);
+        height: 70px;
+        background: #ffffff;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 0 40px;
+        gap: 24px;
+        border-bottom: 1px solid #e5e5e5;
+        z-index: 50;
+      }
 
-    .topbar-user {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+      .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
 
-    .topbar-user span {
-      font-size: 16px;
-      color: #333;
-      font-weight: 500;
-    }
+      .topbar-user span {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+      }
 
-    .topbar-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #ddd;
-    }
+      .topbar-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+      }
 
-    .topbar-logout {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 15px;
-      color: #555;
-      cursor: pointer;
-      text-decoration: none;
-      transition: 0.2s;
-    }
+      .topbar-logout {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        color: #555;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.2s;
+      }
 
-    .topbar-logout:hover {
-      color: #ab1e22;
-    }
+      .topbar-logout:hover {
+        color: #ab1e22;
+      }
 
-    .topbar-divider {
-      width: 1px;
-      height: 40px;
-      background: #ccd3e0;
-      margin: 0 18px;
-    }
+      .topbar-divider {
+        width: 1px;
+        height: 40px;
+        background: #ccd3e0;
+        margin: 0 18px;
+      }
 
-    .home-container {
-      margin-left: 288px;
-      padding: 120px 40px 40px 40px;
-    }
+      .home-container {
+        margin-left: 288px;
+        padding: 120px 40px 40px 40px;
+      }
 
-    iframe {
-      border: none;
-      border-radius: 8px;
-      width: 100%;
-      height: 1366px;
-    }
+      iframe {
+        border: none;
+        border-radius: 8px;
+        width: 100%;
+        height: 1366px;
+      }
 
-     .submenu-item {
-  text-decoration: none; /* Remove o underline */
-}
+      .submenu-item {
+        text-decoration: none; /* Remove o underline */
+      }
+    </style>
+  </head>
 
-  </style>
-</head>
+  <body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img
+          src="{{ url_for('static', filename='assets/logo_r3.png') }}"
+          alt="Logo R3"
+        />
+      </div>
 
-<body>
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <img src="{{ url_for('static', filename='assets/logo_r3.png') }}" alt="Logo R3" />
-    </div>
-
-    <nav class="sidebar-menu">
-      {% if menu.cotacoes %}
-      <div class="dropdown" onclick="toggleDropdown()">
-        <div class="dropdown-header">
-          <div class="dropdown-header-left">
-            <div class="dropdown-icon">
-              <!-- Ícone -->
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
-                <path d="M12 6.75V8.25" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-                <path d="M12 15.75V17.25" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-                <path d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9z" stroke="white" stroke-width="1.5" />
-                <path d="M9.75 15.75h3.375c.497 0 .974-.197 1.325-.549.352-.351.55-.828.55-1.326 0-.498-.198-.975-.55-1.326-.351-.352-.828-.549-1.325-.549h-2.25c-.497 0-.974-.198-1.325-.55A1.87 1.87 0 0 1 9 10.125c0-.498.198-.975.55-1.326.351-.352.828-.549 1.325-.549h3.375" stroke="white" stroke-width="1.5" />
+      <nav class="sidebar-menu">
+        {% if menu.cotacoes %}
+        <div class="dropdown" onclick="toggleDropdown()">
+          <div class="dropdown-header">
+            <div class="dropdown-header-left">
+              <div class="dropdown-icon">
+                <!-- Ícone -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                >
+                  <path
+                    d="M12 6.75V8.25"
+                    stroke="white"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M12 15.75V17.25"
+                    stroke="white"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9z"
+                    stroke="white"
+                    stroke-width="1.5"
+                  />
+                  <path
+                    d="M9.75 15.75h3.375c.497 0 .974-.197 1.325-.549.352-.351.55-.828.55-1.326 0-.498-.198-.975-.55-1.326-.351-.352-.828-.549-1.325-.549h-2.25c-.497 0-.974-.198-1.325-.55A1.87 1.87 0 0 1 9 10.125c0-.498.198-.975.55-1.326.351-.352.828-.549 1.325-.549h3.375"
+                    stroke="white"
+                    stroke-width="1.5"
+                  />
+                </svg>
+              </div>
+              Cotações
+            </div>
+            <div class="dropdown-arrow">
+              <svg width="15" height="10" fill="none">
+                <path d="M1 1l4 4 4-4" stroke="white" stroke-width="1.5" />
               </svg>
             </div>
-            Cotações
           </div>
-          <div class="dropdown-arrow">
-            <svg width="15" height="10" fill="none">
-              <path d="M1 1l4 4 4-4" stroke="white" stroke-width="1.5" />
+          <div class="submenu">
+            <a class="submenu-item" href="{{ url_for('cotacoes_lazer') }}"
+              >Lazer</a
+            >
+
+            <a class="submenu-item" href="{{ url_for('cotacoes_corporativo') }}"
+              >Corporativo</a
+            >
+          </div>
+        </div>
+        {% endif %} {% if menu.relatorios %}
+        <a class="menu-item" href="{{ url_for('relatorios') }}">
+          <div class="menu-icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+            >
+              <path
+                d="M9 12h6M9 15h6"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+              <path
+                d="M4.5 3.75h15V18.75a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18.75V3.75z"
+                stroke="white"
+                stroke-width="1.5"
+              />
+              <path
+                d="M7.5 2.25v3M12 2.25v3M16.5 2.25v3"
+                stroke="white"
+                stroke-width="1.5"
+              />
             </svg>
           </div>
-        </div>
-        <div class="submenu">
-          <a class="submenu-item" href="{{ url_for('cotacoes_lazer') }}">Lazer</a>
+          Relatórios
+        </a>
+        {% endif %} {% if menu.usuarios %}
+        <a class="menu-item" href="{{ url_for('usuarios') }}">
+          <div class="menu-icon">
+            <!-- Ícone de usuários -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+            >
+              <path
+                d="M7.875 15A4.875 4.875 0 1 0 7.875 5.25a4.875 4.875 0 0 0 0 9.75z"
+                stroke="white"
+                stroke-width="1.5"
+              />
+              <path
+                d="M1 18.75c1.5-2.25 4.5-3.75 6.875-3.75 2.375 0 5.375 1.5 6.875 3.75"
+                stroke="white"
+                stroke-width="1.5"
+              />
+              <path
+                d="M16.125 15c2.25 0 4.875 1.5 6.375 3.75"
+                stroke="white"
+                stroke-width="1.5"
+              />
+              <path
+                d="M14.5 5.5a5.5 5.5 0 0 1 5 9"
+                stroke="white"
+                stroke-width="1.5"
+              />
+            </svg>
+          </div>
+          Usuários
+        </a>
+        {% endif %}
+      </nav>
+    </aside>
 
-                      <a class="submenu-item" href="{{ url_for('cotacoes_corporativo') }}">Corporativo</a>
-        </div>
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-user">
+        <span>Bem-vinda, {{ session['user'] }}!</span>
+        <a href="{{ url_for('perfil') }}" class="topbar-avatar-link">
+          <img
+            src="{{ url_for('static', filename=profile_pic) }}"
+            class="topbar-avatar"
+            alt="Foto do usuário"
+          />
+        </a>
+        <div class="topbar-divider"></div>
       </div>
-      {% endif %}
-      {% if menu.relatorios %}
-      <a class="menu-item" href="{{ url_for('relatorios') }}">
-        <div class="menu-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
-            <path d="M9 12h6M9 15h6" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M4.5 3.75h15V18.75a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 18.75V3.75z" stroke="white" stroke-width="1.5" />
-            <path d="M7.5 2.25v3M12 2.25v3M16.5 2.25v3" stroke="white" stroke-width="1.5" />
-          </svg>
-        </div>
-        Relatórios
+      <a href="{{ url_for('logout') }}" class="topbar-logout">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <path
+            d="M10.5 3.75H4.5V20.25H10.5"
+            stroke="#969696"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M10.5 12H21"
+            stroke="#969696"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M17.25 8.25L21 12L17.25 15.75"
+            stroke="#969696"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Sair
       </a>
-      {% endif %}
-      {% if menu.usuarios %}
-      <a class="menu-item" href="{{ url_for('usuarios') }}">
-        <div class="menu-icon">
-          <!-- Ícone de usuários -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
-            <path d="M7.875 15A4.875 4.875 0 1 0 7.875 5.25a4.875 4.875 0 0 0 0 9.75z" stroke="white" stroke-width="1.5" />
-            <path d="M1 18.75c1.5-2.25 4.5-3.75 6.875-3.75 2.375 0 5.375 1.5 6.875 3.75" stroke="white" stroke-width="1.5" />
-            <path d="M16.125 15c2.25 0 4.875 1.5 6.375 3.75" stroke="white" stroke-width="1.5" />
-            <path d="M14.5 5.5a5.5 5.5 0 0 1 5 9" stroke="white" stroke-width="1.5" />
-          </svg>
-        </div>
-        Usuários
-      </a>
-      {% endif %}
-    </nav>
-  </aside>
+    </header>
 
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar-user">
-      <span>Bem-vinda, {{ session['user'] }}!</span>
-      <a href="{{ url_for('perfil') }}" class="topbar-avatar-link">
-        <img src="{{ url_for('static', filename=profile_pic) }}" class="topbar-avatar" alt="Foto do usuário"/>
-      </a>
-      <div class="topbar-divider"></div>
+    <!-- CONTEÚDO PRINCIPAL COM POWER BI -->
+    <div class="home-container">
+      <iframe
+        title="Dashboard Portal R3"
+        src="https://app.powerbi.com/view?r=eyJrIjoiNDlkZWIyNTUtNWNjMi00OGQwLWJmMmUtZjJhZDk3ZGQzNzY5IiwidCI6IjIwNDczZmY2LTA3MTQtNDQwMi05OWQ0LWYzNmVkZmRlMTQzMiJ9"
+        allowfullscreen="true"
+      >
+      </iframe>
     </div>
-    <a href="{{ url_for('logout') }}" class="topbar-logout">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M10.5 3.75H4.5V20.25H10.5" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M10.5 12H21" stroke="#969696" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M17.25 8.25L21 12L17.25 15.75" stroke="#969696" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Sair
-    </a>
-  </header>
 
-  <!-- CONTEÚDO PRINCIPAL COM POWER BI -->
-  <div class="home-container">
-    <iframe title="Dashboard Portal R3"
-      src="https://app.powerbi.com/view?r=eyJrIjoiNDlkZWIyNTUtNWNjMi00OGQwLWJmMmUtZjJhZDk3ZGQzNzY5IiwidCI6IjIwNDczZmY2LTA3MTQtNDQwMi05OWQ0LWYzNmVkZmRlMTQzMiJ9"
-      allowFullScreen="true">
-    </iframe>
-  </div>
-
-  <script>
-    function toggleDropdown() {
-      document.querySelector(".dropdown").classList.toggle("open");
-    }
-  </script>
-</body>
+    <script>
+      function toggleDropdown() {
+        document.querySelector(".dropdown").classList.toggle("open");
+      }
+    </script>
+  </body>
 </html>

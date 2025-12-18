@@ -189,6 +189,13 @@ ETAPA 3 – BLOQUEIO
   REFÇA a separação até igualar.
 
 ==============================
+BLOQUEIO FINAL – COMENTÁRIOS EXPLICATIVOS
+==============================
+- NÃO incluir blocos de observações, comentários ou justificativas no final da resposta.
+- NÃO adicionar explicações sobre como os dados foram calculados, extraídos ou padronizados.
+- O resultado final deve conter apenas as TABELAS exigidas com os dados organizados.
+
+==============================
 TEXTO BRUTO (ÚNICA FONTE)
 ==============================
 {raw_data}
@@ -208,13 +215,243 @@ TEXTO BRUTO (ÚNICA FONTE)
 
     return resposta.choices[0].message.content
 
+def generate_hotel_section(raw_data: str) -> str:
+    from openai import OpenAI
+    import os
+
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    MODEL_NAME = "gpt-4.1-mini"
+
+    prompt = f"""
+Você é um agente especialista em EXTRAÇÃO e ESTRUTURAÇÃO de COTAÇÕES DE HOSPEDAGEM CORPORATIVA.
+
+Sua tarefa é transformar o TEXTO BRUTO fornecido em uma COTAÇÃO DE HOSPEDAGEM ESTRUTURADA,
+em TEXTO PURO (SEM HTML, XML ou MARKDOWN), pronta para ser inserida em um e-mail corporativo.
+
+==============================
+REGRAS GERAIS
+==============================
+- O resultado final DEVE ser TEXTO FORMATADO.
+- NÃO use HTML, XML ou Markdown.
+- Linguagem formal, objetiva e profissional.
+- NÃO inventar dados.
+- NÃO omitir informações.
+- Trabalhe EXCLUSIVAMENTE com dados de HOSPEDAGEM extraídos do texto bruto.
+- Mostrar TODAS as opções de hospedagem encontradas no texto bruto, mesmo que incompletas.
+- Se o texto bruto não contiver hospedagem, retornar exatamente:
+  "Não há informações sobre hospedagem nesta cotação."
+
+==============================
+TABELA ÚNICA – HOSPEDAGENS SUGERIDAS
+==============================
+Você deve gerar UMA ÚNICA TABELA com as seguintes colunas, EXATAMENTE nesta ordem:
+
+Nome | Categoria | Localização | Tipo de Quarto | Check-in/Check-out | Valor | Políticas de Cancelamento
+
+==============================
+REGRAS OBRIGATÓRIAS DA TABELA
+==============================
+- Cada linha representa UMA opção de hospedagem.
+- Preencha todas as colunas com base EXCLUSIVA no texto bruto.
+- Se alguma informação não existir, preencha com: "Não Contempla".
+
+- Se houver um período de estadia comum a todas as hospedagens
+  (exemplo: "2 noite(s) - De: 24/09/2025 a 26/09/2025"),
+  utilize esse intervalo em TODAS as linhas da coluna "Check-in/Check-out".
+
+------------------------------
+REGRA CRÍTICA – TIPO DE QUARTO
+------------------------------
+- O campo "Tipo de Quarto" deve conter APENAS a descrição física do quarto
+  (ex.: "standard room", "12-bed mixed with shared bathroom", "twin bed").
+- É EXPRESSAMENTE PROIBIDO incluir neste campo:
+  "garantia irrevogável", "não reembolsável", "política", "taxas" ou termos similares.
+
+------------------------------
+REGRA CRÍTICA – POLÍTICAS DE CANCELAMENTO
+------------------------------
+- Qualquer menção a:
+  "garantia irrevogável", "não reembolsável", "sem reembolso" ou equivalentes
+  DEVE ser exibida EXCLUSIVAMENTE na coluna "Políticas de Cancelamento".
+- Se a política estiver mencionada junto ao tipo de quarto no texto bruto,
+  você DEVE removê-la do "Tipo de Quarto" e movê-la para "Políticas de Cancelamento".
+- Se não houver informação explícita, use: "Não Contempla".
+
+------------------------------
+REGRA CRÍTICA – VALOR
+------------------------------
+- No campo "Valor", utilize o VALOR TOTAL da estadia quando ele estiver explícito.
+- Se houver apenas valor por diária e o número de noites estiver explícito,
+  calcule o total e apresente o valor final.
+- NÃO estimar valores.
+- NÃO inventar noites ou diárias.
+
+==============================
+REGRA ABSOLUTA – NÃO OMITIR HOTÉIS
+==============================
+- É PROIBIDO omitir qualquer hotel mencionado no texto bruto.
+- Mesmo que o hotel esteja com informações incompletas (ex.: sem valor, sem tipo de quarto), ele DEVE ser incluído na tabela.
+- Utilize "Não Contempla" nos campos ausentes, mas mantenha a linha do hotel.
+- A tabela final DEVE conter o mesmo número de hotéis identificados no texto bruto.
+
+==============================
+REGRAS FINAIS (BLOQUEIOS)
+==============================
+- NÃO gerar tabela secundária.
+- NÃO gerar resumo por datas.
+- NÃO repetir hospedagens.
+- NÃO adicionar colunas extras.
+- NÃO alterar a ordem das colunas.
+- NÃO agrupar hotéis.
+- NÃO reinterpretar dados.
+
+==============================
+TEXTO BRUTO (ÚNICA FONTE)
+==============================
+{raw_data}
+
+"""
+
+    resposta = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {
+                "role": "system",
+                "content": "Você é um agente especialista em extração e estruturação de dados de hospedagem corporativa.",
+            },
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return resposta.choices[0].message.content
+
+
+
+def generate_locacao_section(raw_data: str) -> str:
+
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    MODEL_NAME = "gpt-4.1-mini"
+
+    prompt = f"""
+Você é um agente especialista em EXTRAÇÃO e ESTRUTURAÇÃO de COTAÇÕES DE LOCAÇÃO DE VEÍCULO CORPORATIVA.
+
+Sua tarefa é transformar o TEXTO BRUTO fornecido em uma COTAÇÃO DE LOCAÇÃO ESTRUTURADA,
+em TEXTO PURO (SEM HTML, XML ou MARKDOWN), pronta para ser inserida em um e-mail corporativo.
+
+==============================
+REGRAS GERAIS
+==============================
+- O resultado final DEVE ser TEXTO FORMATADO.
+- NÃO use HTML, XML ou Markdown.
+- Linguagem formal, objetiva e profissional.
+- NÃO inventar dados.
+- NÃO omitir informações.
+- Trabalhe EXCLUSIVAMENTE com dados de LOCAÇÃO DE VEÍCULO.
+- Mostrar TODAS as opções de locação encontradas no texto bruto.
+- Se o texto bruto não contiver informações sobre locação de veículo, retornar exatamente:
+  "Não há informações sobre locação de veículo nesta cotação."
+
+==============================
+TABELA ÚNICA – OPÇÕES DE LOCAÇÃO
+==============================
+Você deve gerar UMA ÚNICA TABELA com as seguintes colunas, nesta ordem:
+
+Categoria do Carro | Valor por Diária | Franquia de KM
+
+==============================
+REGRAS DE FORMATAÇÃO
+==============================
+- Cada linha representa UMA opção de veículo.
+- Se alguma informação não estiver presente no texto bruto, preencher com: "Não Contempla".
+- Não agrupar, combinar ou excluir opções — cada menção a uma locação no texto deve gerar uma linha.
+- Manter a ordem e os títulos das colunas exatamente como especificado.
+- Não adicionar observações, comentários ou explicações no final do texto.
+
+==============================
+TEXTO BRUTO (ÚNICA FONTE)
+==============================
+{raw_data}
+"""
+
+    resposta = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {
+                "role": "system",
+                "content": "Você é um agente especialista em extração e estruturação de dados de locação de veículos corporativos.",
+            },
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return resposta.choices[0].message.content
+
+def generate_textual_service_section(raw_data: str, categoria: str) -> str:
+
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    MODEL_NAME = "gpt-4.1-mini"
+
+    prompt = f"""
+Você é um agente especialista em redação corporativa para COTAÇÕES DE SERVIÇOS DE VIAGEM.
+
+Sua tarefa é analisar o TEXTO BRUTO e extrair **exclusivamente as informações relacionadas à categoria de serviço** abaixo, estruturando o conteúdo em TEXTO CORRIDO, com linguagem formal, clara e profissional, para uso direto em um e-mail corporativo.
+
+==============================
+CATEGORIA DE SERVIÇO: {categoria}
+==============================
+
+==============================
+REGRAS GERAIS
+==============================
+- O resultado final DEVE ser um TEXTO CORRIDO.
+- NÃO use HTML, Markdown ou tabelas.
+- NÃO use bullets, hífens ou listas.
+- NÃO resuma, modifique ou interprete os dados.
+- NÃO omita nenhuma informação.
+- NÃO agrupe, combine ou deduplicate trechos.
+- Apenas REESCREVA o conteúdo do texto bruto com linguagem formal.
+- A estrutura deve ser de parágrafo(s), respeitando a sequência das informações encontradas.
+- NÃO incluir observações, comentários ou mensagens automáticas.
+
+==============================
+QUANDO A CATEGORIA NÃO EXISTIR NO TEXTO
+==============================
+- Se não houver nenhuma menção à categoria "{categoria}" no texto bruto, retorne exatamente:
+  "Não há informações disponíveis para esta categoria."
+
+==============================
+TEXTO BRUTO (ÚNICA FONTE)
+==============================
+{raw_data}
+"""
+
+    resposta = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {
+                "role": "system",
+                "content": "Você transforma informações técnicas de viagem em parágrafos formais para e-mails corporativos.",
+            },
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return resposta.choices[0].message.content.strip()
+
 
 def corporate_quote_template(
     client_name,
     consultant_name,
     raw_data,
     selected_services,
-    aereo_texto_formatado
+    aereo_texto_formatado,
+    hotel_texto_formatado,
+    locacao_texto_formatado,
+    seguro_texto="",
+    passeios_texto="",
+    transfers_texto="",
+    trens_texto="",
+    outros_texto=""
 ):
     """
     Monta o e-mail corporativo final da R3 Viagens
@@ -235,6 +472,61 @@ def corporate_quote_template(
         processed_quote_text += f"""✈️ COTAÇÃO AÉREA
 
 {aereo_texto_formatado}
+
+────────────────────────────
+"""
+    if "hotel" in servicos or "hospedagem" in servicos:
+        processed_quote_text += f"""🏨 COTAÇÃO DE HOSPEDAGEM
+
+{hotel_texto_formatado}
+
+────────────────────────────
+"""
+
+    if "locacao" in servicos or "locação" in servicos or "veículo" in servicos or "carro" in servicos:
+        processed_quote_text += f"""🚗 COTAÇÃO DE LOCAÇÃO DE VEÍCULO
+
+{locacao_texto_formatado}
+
+────────────────────────────
+"""
+
+    if "seguro" in servicos or "seguro viagem" in servicos:
+        processed_quote_text += f"""🛡️ SEGURO VIAGEM
+
+{seguro_texto}
+
+────────────────────────────
+"""
+
+    if "passeios" in servicos:
+        processed_quote_text += f"""🎟️ PASSEIOS
+
+{passeios_texto}
+
+────────────────────────────
+"""
+
+    if "transfers" in servicos:
+        processed_quote_text += f"""🚐 TRANSFERS
+
+{transfers_texto}
+
+────────────────────────────
+"""
+
+    if "trens" in servicos:
+        processed_quote_text += f"""🚆 TRENS
+
+{trens_texto}
+
+────────────────────────────
+"""
+
+    if "outros" in servicos:
+        processed_quote_text += f"""📦 OUTROS
+
+{outros_texto}
 
 ────────────────────────────
 """

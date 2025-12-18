@@ -231,10 +231,9 @@
         padding: 120px 40px 40px 40px; /* espaço para a topbar */
       }
 
-       .submenu-item {
-  text-decoration: none; /* Remove o underline */
-}
-
+      .submenu-item {
+        text-decoration: none; /* Remove o underline */
+      }
     </style>
   </head>
 
@@ -296,12 +295,13 @@
 
           <div class="submenu">
             <div class="submenu-item">Lazer</div>
-                      <a class="submenu-item" href="{{ url_for('cotacoes_corporativo') }}">Corporativo</a>
+            <a class="submenu-item" href="{{ url_for('cotacoes_corporativo') }}"
+              >Corporativo</a
+            >
           </div>
         </div>
         {% endif %} {% if menu.relatorios %}
         <a class="menu-item" href="{{ url_for('relatorios') }}">
-
           <div class="menu-icon">
             <!-- Ícone de relatórios -->
             <svg
