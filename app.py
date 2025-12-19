@@ -14,6 +14,11 @@ import uuid
 from backend.templates_corporate import generate_aereo_section, generate_hotel_section, generate_locacao_section, generate_textual_service_section
 import traceback
 import re
+from backend.templates_leisure import lazer_quote_template
+from backend.templates_leisure import generate_aereo_section, generate_hotel_section, generate_locacao_section, generate_textual_service_section
+from PyPDF2 import PdfReader
+import docx
+import io
 
 
 
@@ -806,6 +811,215 @@ def preview_email():
         preview_text += "\n\n🚆 TRENS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Trens")
 
     # ====== OUTROS ======
+    if "outros" in servicos:
+        preview_text += "\n\n📦 OUTROS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Outros")
+
+    return preview_text or "Nenhum conteúdo para pré-visualização."
+
+
+def extrair_texto_arquivo(file):
+    if file.filename.endswith(".pdf"):
+        reader = PdfReader(file)
+        texto = ""
+        for page in reader.pages:
+            texto += page.extract_text() or ""
+        return texto
+
+    elif file.filename.endswith(".docx"):
+        doc = docx.Document(file)
+        return "\n".join([para.text for para in doc.paragraphs])
+
+    elif file.filename.endswith(".txt"):
+        return file.read().decode("utf-8")
+
+    else:
+        return None
+    
+#lazer
+# ===== ROTA: ENVIO DE E-MAIL DE LAZER =====
+
+@app.route("/send-email-lazer", methods=["POST"])
+def send_email_lazer():
+    nome_cliente = request.form.get("nome_cliente")
+    email_cliente = request.form.get("email_cliente")
+    cotacoes = request.form.get("cotacoesSelecionadas")
+    tipo_viagem = request.form.get("tipo_viagem")
+    texto_manual = request.form.get("texto_cotacao")
+    arquivo = request.files.get("arquivo")
+
+    nome_consultor = session.get("user", "Consultor R3")
+    servicos = [s.strip().lower() for s in cotacoes.split(",")] if cotacoes else []
+
+    # ======= ETAPA 1: EXTRAÇÃO DE TEXTO (manual ou upload) =======
+    texto_extraido = ""
+
+    if arquivo and arquivo.filename:
+        ext = arquivo.filename.lower().split(".")[-1]
+        try:
+            if ext == "pdf":
+                reader = PdfReader(arquivo)
+                texto_extraido = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+            elif ext in ["docx"]:
+                doc = docx.Document(arquivo)
+                texto_extraido = "\n".join([p.text for p in doc.paragraphs])
+            else:
+                return {"status": "error", "message": "Formato de arquivo não suportado."}, 400
+        except Exception as e:
+            traceback.print_exc()
+            return {"status": "error", "message": "Erro ao processar o arquivo."}, 500
+    else:
+        texto_extraido = texto_manual or ""
+
+    # Normalização inicial do texto (remover espaços extras)
+    texto = "\n".join([ln.strip() for ln in texto_extraido.splitlines() if ln.strip()])
+
+    # ======= ETAPA 2: GERAÇÃO DAS SEÇÕES INDIVIDUAIS =======
+    aereo_texto_formatado = ""
+    hotel_texto_formatado = ""
+    locacao_texto_formatado = ""
+    seguro_texto = ""
+    passeios_texto = ""
+    transfers_texto = ""
+    trens_texto = ""
+    outros_texto = ""
+
+    # ✈️ AÉREO
+    if ("aéreo" in servicos or "aereo" in servicos) and texto:
+        texto_aereo = re.sub(r"(Econ(?:ô)?mic)(\d{2,4})", r"\1\n\2", texto, flags=re.IGNORECASE)
+        texto_aereo = re.sub(r"(OW\s*E)(\d{2,4})", r"\1\n\2", texto_aereo, flags=re.IGNORECASE)
+        aereo_texto_formatado = generate_aereo_section(
+            raw_data=texto_aereo,
+            tipo_viagem=tipo_viagem
+        )
+
+    # 🏨 HOSPEDAGEM
+    if "hotel" in servicos or "hospedagem" in servicos:
+        hotel_texto_formatado = generate_hotel_section(raw_data=texto)
+
+    # 🚗 LOCAÇÃO
+    if "locacao" in servicos or "locação" in servicos or "carro" in servicos or "veículo" in servicos:
+        locacao_texto_formatado = generate_locacao_section(raw_data=texto)
+
+    # 🛡️ SEGURO VIAGEM
+    if "seguro" in servicos or "seguro viagem" in servicos:
+        seguro_texto = generate_textual_service_section(raw_data=texto, categoria="Seguro Viagem")
+
+    # 🎟️ PASSEIOS
+    if "passeios" in servicos:
+        passeios_texto = generate_textual_service_section(raw_data=texto, categoria="Passeios")
+
+    # 🚐 TRANSFERS
+    if "transfers" in servicos:
+        transfers_texto = generate_textual_service_section(raw_data=texto, categoria="Transfers")
+
+    # 🚆 TRENS
+    if "trens" in servicos:
+        trens_texto = generate_textual_service_section(raw_data=texto, categoria="Trens")
+
+    # 📦 OUTROS
+    if "outros" in servicos:
+        outros_texto = generate_textual_service_section(raw_data=texto, categoria="Outros")
+
+    # ======= ETAPA 3: GERAÇÃO DO E-MAIL FINAL =======
+    corpo_email = lazer_quote_template(
+        client_name=nome_cliente,
+        consultant_name=nome_consultor,
+        raw_data=texto,
+        selected_services=cotacoes,
+        aereo_texto_formatado=aereo_texto_formatado,
+        hotel_texto_formatado=hotel_texto_formatado,
+        locacao_texto_formatado=locacao_texto_formatado,
+        seguro_texto=seguro_texto,
+        passeios_texto=passeios_texto,
+        transfers_texto=transfers_texto,
+        trens_texto=trens_texto,
+        outros_texto=outros_texto
+    )
+
+    # ======= ETAPA 4: ENVIO DO E-MAIL =======
+    msg = Message(
+        subject=f"Roteiro de Viagem | {nome_cliente}",
+        recipients=[email_cliente],
+        html=corpo_email
+    )
+
+    try:
+        mail.send(msg)
+        return {"status": "success", "message": "E-mail enviado com sucesso."}
+    except Exception:
+        traceback.print_exc()
+        return {"status": "error", "message": "Erro ao enviar o e-mail."}, 500
+
+
+    
+#lazer
+# ===== ROTA: PRÉ-VISUALIZAÇÃO DO E-MAIL DE LAZER =====
+@app.route("/preview-email-lazer", methods=["POST"])
+def preview_email_lazer():
+    texto_manual = request.form.get("texto_cotacao")
+    cotacoes = request.form.get("cotacoesSelecionadas")
+    tipo_viagem = request.form.get("tipo_viagem")
+    arquivo = request.files.get("arquivo")
+
+    servicos = [s.strip().lower() for s in cotacoes.split(",")] if cotacoes else []
+    preview_text = ""
+    texto_extraido = ""
+
+    # ====== EXTRAÇÃO DE TEXTO ======
+    if arquivo and arquivo.filename:
+        ext = arquivo.filename.lower().split(".")[-1]
+        try:
+            if ext == "pdf":
+                reader = PdfReader(arquivo)
+                texto_extraido = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+            elif ext == "docx":
+                doc = docx.Document(arquivo)
+                texto_extraido = "\n".join([p.text for p in doc.paragraphs])
+            else:
+                return "Formato de arquivo não suportado para visualização."
+        except Exception as e:
+            traceback.print_exc()
+            return "Erro ao processar o arquivo para visualização."
+    else:
+        texto_extraido = texto_manual or ""
+
+    texto = "\n".join([ln.strip() for ln in texto_extraido.splitlines() if ln.strip()])
+
+    # ====== EXIBIR TEXTO ORIGINAL ======
+    if texto:
+        preview_text += f"======= TEXTO ORIGINAL BRUTO =======\n{texto.strip()}\n\n======= PRÉ-VISUALIZAÇÃO FORMATADA =======\n"
+
+    # ✈️ AÉREO
+    if ("aéreo" in servicos or "aereo" in servicos) and texto:
+        texto_normalizado = re.sub(r"(Econ(?:ô)?mic)(\d{2,4})", r"\1\n\2", texto, flags=re.IGNORECASE)
+        texto_normalizado = re.sub(r"(OW\s*E)(\d{2,4})", r"\1\n\2", texto_normalizado, flags=re.IGNORECASE)
+        preview_text += generate_aereo_section(raw_data=texto_normalizado, tipo_viagem=tipo_viagem)
+
+    # 🏨 HOSPEDAGEM
+    if "hotel" in servicos or "hospedagem" in servicos:
+        preview_text += "\n\n" + generate_hotel_section(raw_data=texto)
+
+    # 🚗 LOCAÇÃO
+    if "locacao" in servicos or "locação" in servicos or "carro" in servicos or "veículo" in servicos:
+        preview_text += "\n\n" + generate_locacao_section(raw_data=texto)
+
+    # 🛡️ SEGURO VIAGEM
+    if "seguro" in servicos or "seguro viagem" in servicos:
+        preview_text += "\n\n🛡️ SEGURO VIAGEM\n\n" + generate_textual_service_section(raw_data=texto, categoria="Seguro Viagem")
+
+    # 🎟️ PASSEIOS
+    if "passeios" in servicos:
+        preview_text += "\n\n🎟️ PASSEIOS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Passeios")
+
+    # 🚐 TRANSFERS
+    if "transfers" in servicos:
+        preview_text += "\n\n🚐 TRANSFERS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Transfers")
+
+    # 🚆 TRENS
+    if "trens" in servicos:
+        preview_text += "\n\n🚆 TRENS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Trens")
+
+    # 📦 OUTROS
     if "outros" in servicos:
         preview_text += "\n\n📦 OUTROS\n\n" + generate_textual_service_section(raw_data=texto, categoria="Outros")
 

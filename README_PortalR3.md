@@ -1,74 +1,95 @@
 # Portal R3 – Nova Versão  
-### Estrutura de Diretórios e Boas Práticas
+## Estrutura de Diretórios, Arquitetura e Boas Práticas
 
-Este documento descreve a **arquitetura padrão** do projeto **Portal R3**, com separação entre **frontend (HTML/CSS/JS)** e **backend (Python)**.  
-O objetivo é garantir uma estrutura **organizada, semântica e escalável**, seguindo boas práticas de desenvolvimento web moderno.
+Este documento descreve a **arquitetura oficial** do projeto **Portal R3**, contemplando a separação clara entre **frontend (HTML/CSS/JS)** e **backend (Python/Flask)**.  
+
+O objetivo é garantir uma base **organizada, semântica, escalável e preparada para evolução**, seguindo boas práticas de desenvolvimento web e integração com Inteligência Artificial.
 
 ---
 
-## Estrutura Geral do Projeto
+## 📁 Estrutura Geral do Projeto
 
 ```
 R3 - NEW FRONT-END/
 │
-├── app.py                  # Servidor Flask principal com rotas e lógica de envio de e-mail
+├── app.py                         # Servidor Flask principal com rotas e lógica do backend
 │
-├── static/                 # Arquivos estáticos (imagens, ícones, estilos, etc.)
-│   ├── assets/
-│   │   ├── aviso.png       # Ícone de aviso
-│   │   ├── icone.png       # Favicon do sistema
-│   │   ├── logo_r3.png     # Logo institucional da R3 Viagens
-│   │   └── outros arquivos de mídia
-│   ├── css/
-│   │   └── style.css       # Estilos customizados (se houver)
-│   └── js/
-│       └── main.js         # Scripts JavaScript principais (se houver)
+├── backend/                       # Módulos responsáveis pela lógica de negócio e templates de e-mail
+│   ├── templates_corporate.py     # Template e regras de e-mails para cotações corporativas
+│   └── templates_leisure.py       # Template e regras de e-mails para cotações de lazer
 │
-├── templates/              # Templates HTML utilizados pelo Flask
-│   ├── template.html       # Template base (herdado pelas outras páginas)
-│   ├── login.html          # Tela de login
-│   ├── home.html           # Dashboard inicial
-│   ├── cotacoes.html       # Tela de cotações (ex: lazer ou corporativa)
-│   ├── corporativo.html    # Tela específica para cotação corporativa
-│   ├── perfil.html         # Tela de perfil do usuário
+├── database/                      # Banco de dados e scripts auxiliares
+│   ├── create_db.py               # Script de criação do banco de usuários
+│   └── Users.db                   # Banco SQLite com dados dos usuários
+│
+├── static/                        # Arquivos estáticos
+│   ├── assets/                    # Logos, ícones e imagens do sistema
+│   │   ├── aviso.png
+│   │   ├── icone.png
+│   │   ├── login_bg.jpg
+│   │   ├── logo_r3.png
+│   │   └── outros arquivos visuais
+│   │
+│   └── profile_pics/              # Imagens de perfil dos usuários
+│       ├── admin_teste.png
+│       ├── icon_user.png
+│       ├── icon_user.svg
+│       ├── julio22.png
+│       └── teste100.jpeg
+│
+├── templates/                     # Templates HTML renderizados pelo Flask
+│   ├── template.html              # Template base (layout, navbar, estrutura comum)
+│   ├── index.html                 # Tela de login
+│   ├── home.html                  # Dashboard inicial
+│   ├── leisure.html               # Tela de cotações de lazer
+│   ├── corporate.html             # Tela de cotações corporativas
+│   ├── profile.html               # Perfil do usuário
+│   ├── users.html                 # Gestão de usuários (admin)
+│   ├── lost_password.html         # Recuperação de senha
+│   ├── powerbi.html               # Integração com dashboards Power BI
+│   ├── teste.html                 # Página de testes
 │   └── outras páginas HTML
 │
-├── .git/                   # Dados de versionamento Git
-│   └── (arquivos ocultos do Git)
-│
-├── README_PortalR3.md      # Documentação do projeto
-└── requirements.txt        # Lista de dependências do projeto Flask (sugestão: incluir)
-
-
-
-
-
+├── .env                           # Variáveis de ambiente (API keys, credenciais)
+├── .gitignore                     # Arquivos ignorados pelo Git
+├── README_PortalR3.md             # Documentação técnica do projeto
+└── requirements.txt               # Dependências do projeto
 ```
 
 ---
 
-
-## Execução Local (Exemplo Flask)
+## ▶️ Execução Local (Flask)
 
 ```bash
-# 1. Criar ambiente virtual
 python -m venv venv
-source venv/bin/activate  # (ou venv\Scripts\activate no Windows)
-
-# 2. Instalar dependências
+source venv/bin/activate  # ou venv\Scripts\activate no Windows
 pip install -r requirements.txt
-
-# 3. Rodar o servidor Flask
 python app.py
-
-# 4. Acessar no navegador
-http://127.0.0.1:5000
-
 ```
+
+Acesse: http://127.0.0.1:5000
 
 ---
 
+## 🚀 Sugestões de Melhoria e Evolução
 
-**Autor:** Isabella Alencar  
+### Fine-tuning de Modelo de IA
+- Criação de modelo treinado especificamente para cotações de viagens.
+- Maior consistência, menor dependência de prompts longos.
+- Melhor performance e redução de custos a médio prazo.
+
+---
+
+## 🌐 Próximos Passos – Infraestrutura
+
+### Domínio e Deploy
+- Compra de domínio (sugestão: Hostinger)
+- Configuração de DNS e SSL
+- Deploy com Gunicorn + Nginx
+- Separação de ambientes
+
+---
+
+**Autora:** Isabella Alencar  
 **Data:** Novembro/2025  
-**Organização:** Grupo EBG / R3 Online  
+**Organização:** Grupo EBG / R3 Online
